@@ -31,6 +31,36 @@ public class DomainService {
         this.amazonRoute53 = getAmazonRoute53();
     }
 
+
+    public void createTxtRecordForSSLCertificate(String domainName, String value){
+        ResourceRecord resourceRecord = new ResourceRecord();
+        resourceRecord.setValue("\""+value+"\"");
+
+        ResourceRecordSet recordsSet = new ResourceRecordSet();
+        recordsSet.setResourceRecords(List.of(resourceRecord));
+        recordsSet.setType(RRType.TXT);
+        recordsSet.setTTL(900L);
+        recordsSet.setName(domainName);
+
+        Change change = new Change(ChangeAction.CREATE, recordsSet);
+
+        ChangeBatch batch = new ChangeBatch(List.of(change));
+
+        ChangeResourceRecordSetsRequest request = new ChangeResourceRecordSetsRequest();
+        request.setChangeBatch(batch);
+
+
+
+        request.setHostedZoneId(awsSettings.getHostedZoneId());
+        ChangeResourceRecordSetsResult result = amazonRoute53.changeResourceRecordSets(request);
+
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        LOGGER.info("TXT record created -> {}, result-> {}", domainName, result);
+    }
     public void createSubDomain(String domainName) {
 
         ResourceRecord resourceRecord = new ResourceRecord();
