@@ -18,11 +18,13 @@ repositories {
 	mavenCentral()
 	maven { url 'https://repo.spring.io/milestone' }
 	maven { url 'https://repo.spring.io/snapshot' }
+	maven { url 'https://repo.danubetech.com/repository/maven-public' }
 }
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation('org.springframework.boot:spring-boot-starter-validation')
 	implementation 'org.liquibase:liquibase-core'
 	compileOnly 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
@@ -36,6 +38,17 @@ dependencies {
 	implementation group: 'io.vertx', name: 'vertx-config-yaml', version: '4.4.1'
 	implementation group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '9.31'
 	implementation group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.70'
+	implementation group: 'org.bouncycastle', name: 'bcpkix-jdk15on', version: '1.70'
+
+	// for SSL
+	implementation group: 'org.shredzone.acme4j', name: 'acme4j-client', version: '2.16'
+	implementation group: 'org.shredzone.acme4j', name: 'acme4j-utils', version: '2.16'
+
+	//JSON LD
+	implementation('decentralized-identity:jsonld-common-java:1.0.0')
+
+
+
 }
 
 tasks.named('test') {

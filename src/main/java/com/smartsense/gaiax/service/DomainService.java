@@ -1,4 +1,4 @@
-package com.smartsense.gaiax.service.domain;
+package com.smartsense.gaiax.service;
 
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSCredentialsProvider;
