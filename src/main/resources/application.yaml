@@ -1,0 +1,49 @@
+server:
+  port: ${APPLICATION_PORT:8080}
+  shutdown: graceful
+  compression:
+    enabled: true
+
+spring:
+  profiles:
+    active: ${APPLICATION_ENVIRONMENT:dev}
+  liquibase:
+    change-log: classpath:/db/changelog/changelog-master.xml
+  main:
+    allow-bean-definition-overriding: true
+  application:
+    name: smartsense-gaia-x-api
+  datasource:
+    url: jdbc:mariadb://${DB_HOST}:${DB_PORT}/${DB_NAME}?useSSL=${USE_SSL}
+    username: ${DB_USER_NAME}
+    password: ${DB_PASSWORD}
+    initialization-mode: always
+    hikari:
+      connectionTimeout: ${DB_CONNECTION_TIME_OUT:120000}
+      maximumPoolSize: ${DB_POOL_SIZE:10}
+      leakDetectionThreshold: 50000
+      maxLifetime: 30000
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: none
+      naming-strategy: org.hibernate.cfg.ImprovedNamingStrategy
+    properties:
+      hibernate:
+        proc:
+          param_null_passing: true
+        c3p0:
+          timeout: 1800
+        dialect: org.hibernate.dialect.MariaDBDialect
+        jdbc:
+          batch_size: 100
+          batch_versioned_data: true
+        order_inserts: true
+        order_updates: true
+
+aws:
+  accessKey: ${AWS_ACCESS_KEY}
+  secretKey: ${AWS_SECRET_KEY}
+  hostedZoneId: ${HOSTED_ZONE_ID}
+  serverIp: ${SERVER_IP}
+  baseDomain: {BASE_DOMAIN}
