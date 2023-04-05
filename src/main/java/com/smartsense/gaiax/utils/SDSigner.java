@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 | smartSense
+ */
+
 package com.smartsense.gaiax.utils;
 
 import com.nimbusds.jose.*;
@@ -60,6 +64,7 @@ public class SDSigner {
 
     /**
      * Create a canonical representation of the JSON-LD self-description
+     *
      * @param selfDescription
      * @return
      */
@@ -79,6 +84,7 @@ public class SDSigner {
 
     /**
      * Creates a HEX encoded SHA256 Hash of the input
+     *
      * @param input
      * @return
      * @throws NoSuchAlgorithmException
@@ -93,6 +99,7 @@ public class SDSigner {
      * Creates a JSON Web Signature with unencoded Payload
      * https://connect2id.com/products/nimbus-jose-jwt/examples/jws-with-unencoded-payload
      * https://www.w3.org/community/reports/credentials/CG-FINAL-lds-jws2020-20220721/#json-web-signature-2020
+     *
      * @param payload
      * @return
      */
@@ -113,6 +120,7 @@ public class SDSigner {
 
     /**
      * Verifies a JSON Web Signature with unencoded Payload
+     *
      * @param payload
      * @param jws
      * @param rsaPublicKey
@@ -186,6 +194,7 @@ public class SDSigner {
 
     /**
      * Creates a DID with a JWK
+     *
      * @param jwk
      * @return
      */
@@ -212,7 +221,7 @@ public class SDSigner {
     }
 
     public void writeFile(String name, JsonObject content) {
-        if(!vertx.fileSystem().existsBlocking("output")) {
+        if (!vertx.fileSystem().existsBlocking("output")) {
             vertx.fileSystem().mkdirBlocking("output");
         }
         vertx.fileSystem().writeFileBlocking("output/" + Instant.now().getEpochSecond() + "_" + name + ".json", Buffer.buffer(content.encodePrettily()));
@@ -237,7 +246,7 @@ public class SDSigner {
                 LOGGER.info("✅ Signature: " + jws);
 
                 // Verify the signature
-                if(verifyJWSSignature(inputHash, jws, rsaPublicKey)) {
+                if (verifyJWSSignature(inputHash, jws, rsaPublicKey)) {
                     LOGGER.info("✅ Verification successful (local)");
                 } else {
                     LOGGER.debug("✖ Verification failed");
@@ -270,7 +279,7 @@ public class SDSigner {
                 promise.fail(e.getMessage());
             }
 
-        }).onFailure(result ->  {
+        }).onFailure(result -> {
             LOGGER.error("✖ Creation of canonical representation failed");
             promise.fail(result.getMessage());
         });

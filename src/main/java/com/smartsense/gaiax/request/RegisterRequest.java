@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 | smartSense
+ */
+
 package com.smartsense.gaiax.request;
 
 import jakarta.validation.constraints.*;
@@ -34,7 +38,7 @@ public class RegisterRequest {
     private String legalRegistrationType;
 
     @NotBlank
-    @Pattern(regexp ="^[a-zA-Z]{2}-(?:[a-zA-Z]{1,3}|[0-9]{1,3})$")
+    @Pattern(regexp = "^[a-zA-Z]{2}-(?:[a-zA-Z]{1,3}|[0-9]{1,3})$")
     private String headquarterAddress;
 
     @NotBlank

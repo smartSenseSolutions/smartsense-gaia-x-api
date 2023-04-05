@@ -1,38 +1,14 @@
 /*
- * acme4j - Java ACME client
- *
- * Copyright (C) 2015 Richard "Shred" Körber
- *   http://acme4j.shredzone.org
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * Copyright (c) 2023 | smartSense
  */
 package com.smartsense.gaiax.service.ssl;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Writer;
-
-import java.net.URL;
-import java.security.KeyPair;
-import java.util.Collection;
-
-import javax.swing.JOptionPane;
-
-import com.smartsense.gaiax.service.DomainService;
-import org.shredzone.acme4j.Account;
-import org.shredzone.acme4j.AccountBuilder;
-import org.shredzone.acme4j.Authorization;
-import org.shredzone.acme4j.Certificate;
-import org.shredzone.acme4j.Order;
-import org.shredzone.acme4j.Session;
-import org.shredzone.acme4j.Status;
+import com.smartsense.gaiax.dao.entity.Enterprise;
+import com.smartsense.gaiax.dao.repository.EnterpriseRepository;
+import com.smartsense.gaiax.dto.RegistrationStatus;
+import com.smartsense.gaiax.service.domain.DomainService;
+import com.smartsense.gaiax.utils.S3Utils;
+import org.shredzone.acme4j.*;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.Dns01Challenge;
 import org.shredzone.acme4j.exception.AcmeException;
@@ -42,6 +18,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import javax.swing.*;
+import java.io.*;
+import java.net.URL;
+import java.security.KeyPair;
+
 /**
  * A simple client test tool.
  * <p>
@@ -50,17 +31,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class CertificateService {
 
-    // File name of the User Key Pair
+    private static final Logger LOGGER = LoggerFactory.getLogger(CertificateService.class);
     private static final File USER_KEY_FILE = new File("user.key");
-
-    // File name of the Domain Key Pair
-    private static final File DOMAIN_KEY_FILE = new File("domain.key");
-
-    // File name of the CSR
-    private static final File DOMAIN_CSR_FILE = new File("domain.csr");
-
-    // File name of the signed certificate
-    private static final File DOMAIN_CHAIN_FILE = new File("domain-chain.crt");
 
     //Challenge type to be used
     private static final ChallengeType CHALLENGE_TYPE = ChallengeType.DNS;
@@ -70,91 +42,127 @@ public class CertificateService {
 
     private static final Logger LOG = LoggerFactory.getLogger(CertificateService.class);
 
-    public CertificateService(DomainService domainService) {
+    public CertificateService(DomainService domainService, EnterpriseRepository enterpriseRepository, S3Utils s3Utils) {
         this.domainService = domainService;
+        this.enterpriseRepository = enterpriseRepository;
+        this.s3Utils = s3Utils;
     }
 
     private enum ChallengeType {HTTP, DNS}
 
     private final DomainService domainService;
 
-    /**
-     * Generates a certificate for the given domains. Also takes care for the registration
-     * process.
-     *
-     * @param domains
-     *         Domains to get a common certificate for
-     */
-    public void fetchCertificate(Collection<String> domains) throws IOException, AcmeException {
-        // Load the user key file. If there is no key file, create a new one.
-        KeyPair userKeyPair = loadOrCreateUserKeyPair();
+    private final EnterpriseRepository enterpriseRepository;
 
-        // Create a session for Let's Encrypt.
-        // Use "acme://letsencrypt.org" for production server
-        Session session = new Session("acme://letsencrypt.org/staging");
+    private final S3Utils s3Utils;
 
-        // Get the Account.
-        // If there is no account yet, create a new one.
-        Account acct = findOrRegisterAccount(session, userKeyPair);
-
-        // Load or create a key pair for the domains. This should not be the userKeyPair!
-        KeyPair domainKeyPair = loadOrCreateDomainKeyPair();
-
-        // Order the certificate
-        Order order = acct.newOrder().domains(domains).create();
-
-        // Perform all required authorizations
-        for (Authorization auth : order.getAuthorizations()) {
-            authorize(auth);
+    public void fetchCertificate(long enterpriseId) {
+        Enterprise enterprise = enterpriseRepository.findById(enterpriseId).orElse(null);
+        if (enterprise == null) {
+            LOGGER.error("Invalid enterprise id");
+            return;
         }
+        String domain = enterprise.getSubDomainName();
+        File domainChainFile = new File("/tmp/" + domain + "_chain.crt");
+        File csrFile = new File("/tmp/" + domain + ".csr");
+        File keyfile = new File("/tmp/" + domain + ".key");
 
-        // Generate a CSR for all of the domains, and sign it with the domain key pair.
-        CSRBuilder csrb = new CSRBuilder();
-        csrb.addDomains(domains);
-        csrb.sign(domainKeyPair);
-
-        // Write the CSR to a file, for later use.
-        try (Writer out = new FileWriter(DOMAIN_CSR_FILE)) {
-            csrb.write(out);
-        }
-
-        // Order the certificate
-        order.execute(csrb.getEncoded());
-
-        // Wait for the order to complete
         try {
-            int attempts = 10;
-            while (order.getStatus() != Status.VALID && attempts-- > 0) {
-                // Did the order fail?
-                if (order.getStatus() == Status.INVALID) {
-                    LOG.error("Order has failed, reason: {}", order.getError());
-                    throw new AcmeException("Order failed... Giving up.");
-                }
 
-                // Wait for a few seconds
-                Thread.sleep(3000L);
+            // Load the user key file. If there is no key file, create a new one.
+            KeyPair userKeyPair = loadOrCreateUserKeyPair();
 
-                // Then update the status
-                order.update();
+            // Create a session for Let's Encrypt.
+            // Use "acme://letsencrypt.org" for production server
+            Session session = new Session("acme://letsencrypt.org/staging");
+
+            // Get the Account.
+            // If there is no account yet, create a new one.
+            Account acct = findOrRegisterAccount(session, userKeyPair);
+
+            // Load or create a key pair for the domains. This should not be the userKeyPair!
+            KeyPair domainKeyPair = loadOrCreateDomainKeyPair(keyfile);
+
+            // Order the certificate
+            Order order = acct.newOrder().domain(domain).create();
+
+            // Perform all required authorizations
+            for (Authorization auth : order.getAuthorizations()) {
+                authorize(auth);
             }
-        } catch (InterruptedException ex) {
-            LOG.error("interrupted", ex);
-            Thread.currentThread().interrupt();
+
+            // Generate a CSR for all of the domains, and sign it with the domain key pair.
+            CSRBuilder csrb = new CSRBuilder();
+            csrb.addDomain(domain);
+            csrb.sign(domainKeyPair);
+
+
+            // Write the CSR to a file, for later use.
+            try (Writer out = new FileWriter(csrFile)) {
+                csrb.write(out);
+            }
+
+            // Order the certificate
+            order.execute(csrb.getEncoded());
+
+            // Wait for the order to complete
+            try {
+                int attempts = 10;
+                while (order.getStatus() != Status.VALID && attempts-- > 0) {
+                    // Did the order fail?
+                    if (order.getStatus() == Status.INVALID) {
+                        LOG.error("Order has failed, reason: {}", order.getError());
+                        throw new AcmeException("Order failed... Giving up.");
+                    }
+
+                    // Wait for a few seconds
+                    Thread.sleep(3000L);
+
+                    // Then update the status
+                    order.update();
+                }
+            } catch (InterruptedException ex) {
+                LOG.error("interrupted", ex);
+                Thread.currentThread().interrupt();
+            }
+
+            // Get the certificate
+            Certificate certificate = order.getCertificate();
+
+            LOG.info("Success! The certificate for domains {} has been generated!", domain);
+            LOG.info("Certificate URL: {}", certificate.getLocation());
+
+
+            // Write a combined file containing the certificate and chain.
+            try (FileWriter fw = new FileWriter(domainChainFile)) {
+                certificate.writeCertificate(fw);
+            }
+
+            //save files in s3
+            s3Utils.uploadFile(enterpriseId + "/x509CertificateChain.pem", domainChainFile);
+            s3Utils.uploadFile(enterpriseId + "/" + csrFile.getName(), csrFile);
+            s3Utils.uploadFile(enterpriseId + "/" + keyfile.getName(), keyfile);
+
+
+            enterprise.setStatus(RegistrationStatus.CERTIFICATE_CREATED.getStatus());
+        } catch (Exception e) {
+            LOGGER.error("Can not create certificate for enterprise ->{}, domain ->{}", enterpriseId, enterprise.getSubDomainName(), e);
+            enterprise.setStatus(RegistrationStatus.CERTIFICATE_CREATION_FAILED.getStatus());
+        } finally {
+            enterpriseRepository.save(enterprise);
+
+            //delete files
+            if (domainChainFile.exists()) {
+                domainChainFile.delete();
+            }
+            if (csrFile.exists()) {
+                csrFile.delete();
+            }
+            if (keyfile.exists()) {
+                keyfile.delete();
+            }
+
         }
-
-        // Get the certificate
-        Certificate certificate = order.getCertificate();
-
-        LOG.info("Success! The certificate for domains {} has been generated!", domains);
-        LOG.info("Certificate URL: {}", certificate.getLocation());
-
-        // Write a combined file containing the certificate and chain.
-        try (FileWriter fw = new FileWriter(DOMAIN_CHAIN_FILE)) {
-            certificate.writeCertificate(fw);
-        }
-
-        // That's all! Configure your web server to use the DOMAIN_KEY_FILE and
-        // DOMAIN_CHAIN_FILE for the requested domains.
     }
 
     /**
@@ -183,20 +191,14 @@ public class CertificateService {
         }
     }
 
-    /**
-     * Loads a domain key pair from {@link #DOMAIN_KEY_FILE}. If the file does not exist,
-     * a new key pair is generated and saved.
-     *
-     * @return Domain {@link KeyPair}.
-     */
-    private KeyPair loadOrCreateDomainKeyPair() throws IOException {
-        if (DOMAIN_KEY_FILE.exists()) {
-            try (FileReader fr = new FileReader(DOMAIN_KEY_FILE)) {
+    private KeyPair loadOrCreateDomainKeyPair(File domainChainFile) throws IOException {
+        if (domainChainFile.exists()) {
+            try (FileReader fr = new FileReader(domainChainFile)) {
                 return KeyPairUtils.readKeyPair(fr);
             }
         } else {
             KeyPair domainKeyPair = KeyPairUtils.createKeyPair(KEY_SIZE);
-            try (FileWriter fw = new FileWriter(DOMAIN_KEY_FILE)) {
+            try (FileWriter fw = new FileWriter(domainChainFile)) {
                 KeyPairUtils.writeKeyPair(domainKeyPair, fw);
             }
             return domainKeyPair;
@@ -213,8 +215,7 @@ public class CertificateService {
      * If you need to get access to your account later, reconnect to it via {@link
      * Session#login(URL, KeyPair)} by using the stored location.
      *
-     * @param session
-     *         {@link Session} to bind with
+     * @param session {@link Session} to bind with
      * @return {@link Account}
      */
     private Account findOrRegisterAccount(Session session, KeyPair accountKey) throws AcmeException {
@@ -232,8 +233,7 @@ public class CertificateService {
      * Authorize a domain. It will be associated with your account, so you will be able to
      * retrieve a signed certificate for the domain later.
      *
-     * @param auth
-     *         {@link Authorization} to perform
+     * @param auth {@link Authorization} to perform
      */
     private void authorize(Authorization auth) throws AcmeException {
         LOG.info("Authorization for domain {}", auth.getIdentifier().getDomain());
@@ -245,10 +245,8 @@ public class CertificateService {
 
         // Find the desired challenge and prepare it.
         Challenge challenge = null;
-        switch (CHALLENGE_TYPE) {
-            case DNS:
-                challenge = dnsChallenge(auth);
-                break;
+        if (CHALLENGE_TYPE == ChallengeType.DNS) {
+            challenge = dnsChallenge(auth);
         }
 
         if (challenge == null) {
@@ -274,7 +272,7 @@ public class CertificateService {
                 }
 
                 // Wait for a few seconds
-                Thread.sleep(10000L);
+                Thread.sleep(30000L);
 
                 // Then update the status
                 challenge.update();
@@ -291,7 +289,11 @@ public class CertificateService {
         }
 
         LOG.info("Challenge has been completed. Remember to remove the validation resource.");
-        completeChallenge("Challenge has been completed.\nYou can remove the resource again now.");
+        Dns01Challenge dnsChallenge = auth.findChallenge(Dns01Challenge.TYPE);
+        String valuesToBeAdded = dnsChallenge.getDigest();
+        String domain = Dns01Challenge.toRRName(auth.getIdentifier());
+
+        domainService.deleteTxtRecordForSSLCertificate(domain, valuesToBeAdded);
     }
 
 
@@ -303,11 +305,10 @@ public class CertificateService {
      * This example outputs instructions that need to be executed manually. In a
      * production environment, you would rather configure your DNS automatically.
      *
-     * @param auth
-     *         {@link Authorization} to find the challenge in
+     * @param auth {@link Authorization} to find the challenge in
      * @return {@link Challenge} to verify
      */
-    public Challenge dnsChallenge(Authorization auth) throws AcmeException {
+    private Challenge dnsChallenge(Authorization auth) throws AcmeException {
         // Find a single dns-01 challenge
         Dns01Challenge challenge = auth.findChallenge(Dns01Challenge.TYPE);
         if (challenge == null) {
@@ -327,8 +328,7 @@ public class CertificateService {
      * Presents the instructions for removing the challenge validation, and waits for
      * dismissal.
      *
-     * @param message
-     *         Instructions to be shown in the dialog
+     * @param message Instructions to be shown in the dialog
      */
     public void completeChallenge(String message) throws AcmeException {
         JOptionPane.showMessageDialog(null,

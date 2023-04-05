@@ -1,19 +1,23 @@
+/*
+ * Copyright (c) 2023 | smartSense
+ */
+
 package com.smartsense.gaiax.utils;
 
 /**
  * @author Nitin
  * @version 1.0
  */
+
 import io.vertx.config.ConfigRetriever;
 import io.vertx.config.ConfigRetrieverOptions;
 import io.vertx.config.ConfigStoreOptions;
-
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class App{
+public class App {
     private static final Logger LOGGER = LoggerFactory.getLogger(App.class);
 
     public static void main(String[] args) {
