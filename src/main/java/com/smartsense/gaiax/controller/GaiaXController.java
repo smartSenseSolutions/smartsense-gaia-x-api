@@ -8,12 +8,16 @@ import com.smartsense.gaiax.dao.entity.Enterprise;
 import com.smartsense.gaiax.request.RegisterRequest;
 import com.smartsense.gaiax.service.domain.DomainService;
 import com.smartsense.gaiax.service.enterprise.RegistrationService;
+import com.smartsense.gaiax.service.k8s.K8SService;
 import com.smartsense.gaiax.service.ssl.CertificateService;
+import io.kubernetes.client.openapi.ApiException;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import org.quartz.SchedulerException;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
 
 /**
  * @author Nitin
@@ -28,11 +32,14 @@ public class GaiaXController {
 
     private final CertificateService certificateService;
 
+    private final K8SService k8SService;
 
-    public GaiaXController(RegistrationService registrationService, DomainService domainService, CertificateService certificateService) {
+
+    public GaiaXController(RegistrationService registrationService, DomainService domainService, CertificateService certificateService, K8SService k8SService) {
         this.registrationService = registrationService;
         this.domainService = domainService;
         this.certificateService = certificateService;
+        this.k8SService = k8SService;
     }
 
     @Operation(summary = "For testing purpose only")
@@ -62,4 +69,11 @@ public class GaiaXController {
         return "Created";
     }
 
+
+    @Operation(summary = "Will be removed. to test create subdomain in standalone mode")
+    @GetMapping(path = "tls/{enterpriseId}")
+    public String createTlsSecret(@PathVariable(name = "enterpriseId") long enterpriseId) throws IOException, ApiException {
+        k8SService.createIngress(enterpriseId);
+        return "Created";
+    }
 }

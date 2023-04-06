@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: smartsense-gaia-x-api
+  namespace: default
+data:
+  APPLICATION_ENVIRONMENT: "dev"
+  APPLICATION_PORT: "8080"
+  MANAGEMENT_PORT: "8090"
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+  labels:
+    app: postgres
+data:
+  POSTGRES_PASSWORD: smart
+  POSTGRES_USER: root
+  POSTGRES_DB: postgres

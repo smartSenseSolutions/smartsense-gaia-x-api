@@ -9,4 +9,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface EnterpriseCertificateRepository extends JpaRepository<EnterpriseCertificate, Long> {
 
+    EnterpriseCertificate getByEnterpriseId(long enterpriseId);
+    
 }

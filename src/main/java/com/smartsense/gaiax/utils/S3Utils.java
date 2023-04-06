@@ -10,6 +10,7 @@ import com.amazonaws.auth.SystemPropertiesCredentialsProvider;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import com.smartsense.gaiax.config.AWSSettings;
 import com.smartsense.gaiax.dto.StringPool;
@@ -70,6 +71,11 @@ public class S3Utils {
         return s3Client.generatePresignedUrl(StringPool.S3_BUCKET_NAME, objectName, Date.valueOf(LocalDate.now().plusDays(3))).toString();
     }
 
+    public File getObject(String key, String fileName) {
+        File localFile = new File("/tmp/" + fileName);
+        s3Client.getObject(new GetObjectRequest(StringPool.S3_BUCKET_NAME, key), localFile);
+        return localFile;
+    }
 
     /**
      * Object exist boolean.

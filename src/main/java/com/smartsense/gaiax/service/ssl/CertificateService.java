@@ -4,6 +4,8 @@
 package com.smartsense.gaiax.service.ssl;
 
 import com.smartsense.gaiax.dao.entity.Enterprise;
+import com.smartsense.gaiax.dao.entity.EnterpriseCertificate;
+import com.smartsense.gaiax.dao.repository.EnterpriseCertificateRepository;
 import com.smartsense.gaiax.dao.repository.EnterpriseRepository;
 import com.smartsense.gaiax.dto.RegistrationStatus;
 import com.smartsense.gaiax.service.domain.DomainService;
@@ -42,10 +44,11 @@ public class CertificateService {
 
     private static final Logger LOG = LoggerFactory.getLogger(CertificateService.class);
 
-    public CertificateService(DomainService domainService, EnterpriseRepository enterpriseRepository, S3Utils s3Utils) {
+    public CertificateService(DomainService domainService, EnterpriseRepository enterpriseRepository, S3Utils s3Utils, EnterpriseCertificateRepository enterpriseCertificateRepository) {
         this.domainService = domainService;
         this.enterpriseRepository = enterpriseRepository;
         this.s3Utils = s3Utils;
+        this.enterpriseCertificateRepository = enterpriseCertificateRepository;
     }
 
     private enum ChallengeType {HTTP, DNS}
@@ -55,6 +58,8 @@ public class CertificateService {
     private final EnterpriseRepository enterpriseRepository;
 
     private final S3Utils s3Utils;
+
+    private final EnterpriseCertificateRepository enterpriseCertificateRepository;
 
     public void fetchCertificate(long enterpriseId) {
         Enterprise enterprise = enterpriseRepository.findById(enterpriseId).orElse(null);
@@ -138,13 +143,25 @@ public class CertificateService {
                 certificate.writeCertificate(fw);
             }
 
+            String certificateChain = enterpriseId + "/x509CertificateChain.pem";
+            String csr = enterpriseId + "/" + csrFile.getName();
+            String keyFile = enterpriseId + "/" + keyfile.getName();
             //save files in s3
-            s3Utils.uploadFile(enterpriseId + "/x509CertificateChain.pem", domainChainFile);
-            s3Utils.uploadFile(enterpriseId + "/" + csrFile.getName(), csrFile);
-            s3Utils.uploadFile(enterpriseId + "/" + keyfile.getName(), keyfile);
+            s3Utils.uploadFile(certificateChain, domainChainFile);
+            s3Utils.uploadFile(csr, csrFile);
+            s3Utils.uploadFile(keyFile, keyfile);
 
 
             enterprise.setStatus(RegistrationStatus.CERTIFICATE_CREATED.getStatus());
+
+            //save certificate location
+            EnterpriseCertificate enterpriseCertificate = EnterpriseCertificate.builder()
+                    .certificateChain(certificateChain)
+                    .enterpriseId(enterpriseId)
+                    .csr(csr)
+                    .privateKey(keyFile)
+                    .build();
+            enterpriseCertificateRepository.save(enterpriseCertificate);
         } catch (Exception e) {
             LOGGER.error("Can not create certificate for enterprise ->{}, domain ->{}", enterpriseId, enterprise.getSubDomainName(), e);
             enterprise.setStatus(RegistrationStatus.CERTIFICATE_CREATION_FAILED.getStatus());
