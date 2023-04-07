@@ -25,7 +25,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.nio.file.Files;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -75,9 +74,11 @@ public class K8SService {
 
             String certString = Files.readString(crt.toPath());
             String keyString = Files.readString(key.toPath());
+            LOGGER.debug("certString  -> {}", certString);
+            LOGGER.debug("keyString  -> {}", keyString);
 
-            secret.putDataItem("tls.crt", Base64.getEncoder().encode(certString.getBytes()));
-            secret.putDataItem("tls.key", Base64.getEncoder().encode(keyString.getBytes()));
+            secret.putDataItem("tls.crt", certString.getBytes());
+            secret.putDataItem("tls.key", keyString.getBytes());
 
 
             V1Secret aDefault = api.createNamespacedSecret("default", secret, null, null, null, null);
