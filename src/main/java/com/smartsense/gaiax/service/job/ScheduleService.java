@@ -46,7 +46,7 @@ public class ScheduleService {
                 .forJob(job)
                 .withIdentity(UUID.randomUUID().toString(), type)
                 .startAt(new Date(System.currentTimeMillis() + 10000)) //start after 10 sec
-                .withSchedule(SimpleScheduleBuilder.simpleSchedule().withRepeatCount(count))
+                .withSchedule(SimpleScheduleBuilder.simpleSchedule().withRepeatCount(count).withIntervalInSeconds(30))
                 .build();
         scheduler.scheduleJob(job, activateEnterpriseUserTrigger);
         LOGGER.debug("{}: job created for enterprise id->{}", type, enterpriseId);
