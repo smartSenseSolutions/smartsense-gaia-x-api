@@ -14,7 +14,7 @@ spring:
   application:
     name: smartsense-gaia-x-api
   datasource:
-    url: jdbc:mariadb://${DB_HOST}:${DB_PORT}/${DB_NAME}?useSSL=${USE_SSL}
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}?useSSL=${USE_SSL}
     username: ${DB_USER_NAME}
     password: ${DB_PASSWORD}
     initialization-mode: always
@@ -23,6 +23,24 @@ spring:
       maximumPoolSize: ${DB_POOL_SIZE:10}
       leakDetectionThreshold: 50000
       maxLifetime: 30000
+  quartz:
+    job-store-type: jdbc
+    properties:
+      org:
+        quartz:
+          scheduler:
+            instanceName: smartSense
+            instanceId: AUTO
+            batchTriggerAcquisitionMaxCount: ${QUARTZ_BATCH_TRIGGER_ACQUISITION_MAX_COUNT:10}
+            batchTriggerAcquisitionFireAheadTimeWindow: 1000
+          jobStore:
+            isClustered: true
+            clusterCheckinInterval: 10000
+            acquireTriggersWithinLock: true
+            driverDelegateClass: org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
+          threadPool:
+            threadCount: ${QUARTZ_THREAD_COUNT:10}
+
   jpa:
     show-sql: false
     hibernate:
