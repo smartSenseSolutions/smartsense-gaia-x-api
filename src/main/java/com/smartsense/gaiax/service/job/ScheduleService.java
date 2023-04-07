@@ -27,8 +27,9 @@ public class ScheduleService {
     public void deleteJob(JobKey jobKey) {
         try {
             scheduler.deleteJob(jobKey);
+            LOGGER.debug("Job deleted for group-{}, name-{}", jobKey.getGroup(), jobKey.getName());
         } catch (SchedulerException e) {
-            LOGGER.error("Can not delete job with key-{}", jobKey.getName());
+            LOGGER.error("Can not delete job with group-{}, name-{}", jobKey.getGroup(), jobKey.getName());
         }
     }
 

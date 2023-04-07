@@ -172,8 +172,11 @@ public class CertificateService {
 
             //create Job tp create ingress and tls secret
             scheduleService.createJob(enterpriseId, StringPool.JOB_TYPE_CREATE_INGRESS, 0);
-            //delete job
-            scheduleService.deleteJob(jobKey);
+            if (jobKey != null) {
+                //delete job
+                scheduleService.deleteJob(jobKey);
+            }
+
         } catch (Exception e) {
             LOGGER.error("Can not create certificate for enterprise ->{}, domain ->{}", enterpriseId, enterprise.getSubDomainName(), e);
             enterprise.setStatus(RegistrationStatus.CERTIFICATE_CREATION_FAILED.getStatus());
