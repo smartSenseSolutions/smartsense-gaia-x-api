@@ -12,7 +12,7 @@ spec:
   accessModes:
     - ReadWriteMany
   hostPath:
-    path: "/home/nitin/data"
+    path: "/home/ubuntu/data"
 ---
 kind: PersistentVolumeClaim
 apiVersion: v1

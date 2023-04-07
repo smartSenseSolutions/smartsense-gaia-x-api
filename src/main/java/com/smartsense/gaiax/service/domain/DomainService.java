@@ -78,13 +78,21 @@ public class DomainService {
     }
 
     public void deleteTxtRecordForSSLCertificate(String domainName, String value) {
-        updateTxtRecords(domainName, value, ChangeAction.DELETE);
+        try {
+            updateTxtRecords(domainName, value, ChangeAction.DELETE);
+        } catch (Exception e) {
+            LOGGER.error("Can not delete txt records for domain ->{}", domainName, e); //TODO need to check if record is already exist
+        }
         LOGGER.info("TXT record deleted -> {}", domainName);
     }
 
 
     public void createTxtRecordForSSLCertificate(String domainName, String value) {
-        updateTxtRecords(domainName, value, ChangeAction.CREATE);
+        try {
+            updateTxtRecords(domainName, value, ChangeAction.CREATE);
+        } catch (Exception e) {
+            LOGGER.error("Can not create txt records for domain ->{}", domainName, e); //TODO need to check if record is already created
+        }
         LOGGER.info("TXT record created -> {} ", domainName);
     }
 

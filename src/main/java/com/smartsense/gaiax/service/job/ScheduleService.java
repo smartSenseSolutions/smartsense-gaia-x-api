@@ -40,6 +40,6 @@ public class ScheduleService {
                 .withSchedule(SimpleScheduleBuilder.simpleSchedule())
                 .build();
         scheduler.scheduleJob(job, activateEnterpriseUserTrigger);
-        LOGGER.debug("createSubdomainJob: job created for enterprise id->{}", enterpriseId);
+        LOGGER.debug("{}: job created for enterprise id->{}", type, enterpriseId);
     }
 }

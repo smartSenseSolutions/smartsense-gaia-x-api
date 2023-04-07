@@ -9,6 +9,8 @@ public interface StringPool {
 
     String JOB_TYPE_CREATE_CERTIFICATE = "JOB_TYPE_CREATE_CERTIFICATE";
 
+    String JOB_TYPE_CREATE_INGRESS = "JOB_TYPE_CREATE_INGRESS";
+
     String ENTERPRISE_ID = "enterpriseId";
     String JOB_TYPE = "JOB_TYPE";
     String S3_BUCKET_NAME = "smartsense-gaiax-mvp";

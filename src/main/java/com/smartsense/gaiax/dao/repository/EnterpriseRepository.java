@@ -17,4 +17,6 @@ public interface EnterpriseRepository extends JpaRepository<Enterprise, Long> {
     boolean existsBySubDomainName(String subDomain);
 
     boolean existsByLegalRegistrationNumber(String registrationNumber);
+
+    Enterprise getBySubDomainName(String hostName);
 }

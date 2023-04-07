@@ -17,6 +17,6 @@ metadata:
   labels:
     app: postgres
 data:
-  POSTGRES_PASSWORD: smart
-  POSTGRES_USER: root
+  POSTGRES_PASSWORD: mie4OVahpoochai6
+  POSTGRES_USER: smartsense-gaia-x
   POSTGRES_DB: postgres

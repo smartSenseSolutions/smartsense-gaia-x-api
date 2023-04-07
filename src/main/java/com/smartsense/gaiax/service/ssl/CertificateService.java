@@ -8,7 +8,9 @@ import com.smartsense.gaiax.dao.entity.EnterpriseCertificate;
 import com.smartsense.gaiax.dao.repository.EnterpriseCertificateRepository;
 import com.smartsense.gaiax.dao.repository.EnterpriseRepository;
 import com.smartsense.gaiax.dto.RegistrationStatus;
+import com.smartsense.gaiax.dto.StringPool;
 import com.smartsense.gaiax.service.domain.DomainService;
+import com.smartsense.gaiax.service.job.ScheduleService;
 import com.smartsense.gaiax.utils.S3Utils;
 import org.shredzone.acme4j.*;
 import org.shredzone.acme4j.challenge.Challenge;
@@ -44,11 +46,12 @@ public class CertificateService {
 
     private static final Logger LOG = LoggerFactory.getLogger(CertificateService.class);
 
-    public CertificateService(DomainService domainService, EnterpriseRepository enterpriseRepository, S3Utils s3Utils, EnterpriseCertificateRepository enterpriseCertificateRepository) {
+    public CertificateService(DomainService domainService, EnterpriseRepository enterpriseRepository, S3Utils s3Utils, EnterpriseCertificateRepository enterpriseCertificateRepository, ScheduleService scheduleService) {
         this.domainService = domainService;
         this.enterpriseRepository = enterpriseRepository;
         this.s3Utils = s3Utils;
         this.enterpriseCertificateRepository = enterpriseCertificateRepository;
+        this.scheduleService = scheduleService;
     }
 
     private enum ChallengeType {HTTP, DNS}
@@ -61,7 +64,9 @@ public class CertificateService {
 
     private final EnterpriseCertificateRepository enterpriseCertificateRepository;
 
-    public void fetchCertificate(long enterpriseId) {
+    private final ScheduleService scheduleService;
+
+    public void createSSLCertificate(long enterpriseId) {
         Enterprise enterprise = enterpriseRepository.findById(enterpriseId).orElse(null);
         if (enterprise == null) {
             LOGGER.error("Invalid enterprise id");
@@ -79,7 +84,7 @@ public class CertificateService {
 
             // Create a session for Let's Encrypt.
             // Use "acme://letsencrypt.org" for production server
-            Session session = new Session("acme://letsencrypt.org/staging");
+            Session session = new Session("acme://letsencrypt.org");
 
             // Get the Account.
             // If there is no account yet, create a new one.
@@ -114,6 +119,7 @@ public class CertificateService {
             try {
                 int attempts = 10;
                 while (order.getStatus() != Status.VALID && attempts-- > 0) {
+                    LOGGER.debug("Waiting for order confirmation attempts->{}", attempts);
                     // Did the order fail?
                     if (order.getStatus() == Status.INVALID) {
                         LOG.error("Order has failed, reason: {}", order.getError());
@@ -121,7 +127,7 @@ public class CertificateService {
                     }
 
                     // Wait for a few seconds
-                    Thread.sleep(3000L);
+                    Thread.sleep(6000L);
 
                     // Then update the status
                     order.update();
@@ -162,6 +168,9 @@ public class CertificateService {
                     .privateKey(keyFile)
                     .build();
             enterpriseCertificateRepository.save(enterpriseCertificate);
+
+            //create Job tp create ingress and tls secret
+            scheduleService.createJob(enterpriseId, StringPool.JOB_TYPE_CREATE_INGRESS);
         } catch (Exception e) {
             LOGGER.error("Can not create certificate for enterprise ->{}, domain ->{}", enterpriseId, enterprise.getSubDomainName(), e);
             enterprise.setStatus(RegistrationStatus.CERTIFICATE_CREATION_FAILED.getStatus());
@@ -254,63 +263,66 @@ public class CertificateService {
      */
     private void authorize(Authorization auth) throws AcmeException {
         LOG.info("Authorization for domain {}", auth.getIdentifier().getDomain());
+        Dns01Challenge dnsChallenge = auth.findChallenge(Dns01Challenge.TYPE);
+        String valuesToBeAdded = dnsChallenge.getDigest();
+        String domain = Dns01Challenge.toRRName(auth.getIdentifier());
 
-        // The authorization is already valid. No need to process a challenge.
-        if (auth.getStatus() == Status.VALID) {
-            return;
-        }
-
-        // Find the desired challenge and prepare it.
-        Challenge challenge = null;
-        if (CHALLENGE_TYPE == ChallengeType.DNS) {
-            challenge = dnsChallenge(auth);
-        }
-
-        if (challenge == null) {
-            throw new AcmeException("No challenge found");
-        }
-
-        // If the challenge is already verified, there's no need to execute it again.
-        if (challenge.getStatus() == Status.VALID) {
-            return;
-        }
-
-        // Now trigger the challenge.
-        challenge.trigger();
-
-        // Poll for the challenge to complete.
         try {
-            int attempts = 10;
-            while (challenge.getStatus() != Status.VALID && attempts-- > 0) {
+            // The authorization is already valid. No need to process a challenge.
+            if (auth.getStatus() == Status.VALID) {
+                return;
+            }
+
+            // Find the desired challenge and prepare it.
+            Challenge challenge = null;
+            if (CHALLENGE_TYPE == ChallengeType.DNS) {
+                challenge = dnsChallenge(auth);
+            }
+
+            if (challenge == null) {
+                throw new AcmeException("No challenge found");
+            }
+
+            // If the challenge is already verified, there's no need to execute it again.
+            if (challenge.getStatus() == Status.VALID) {
+                return;
+            }
+
+            // Now trigger the challenge.
+            challenge.trigger();
+
+            // Poll for the challenge to complete.
+            try {
+                int attempts = 6;
+                while (challenge.getStatus() != Status.VALID && attempts-- > 0) {
+                    LOGGER.debug("Waiting for 30 sec before check of DNS record attempts -> {}", attempts);
+                    // Wait for a few seconds
+                    Thread.sleep(30000L);
+
+                    // Then update the status
+                    challenge.update();
+                }
                 // Did the authorization fail?
                 if (challenge.getStatus() == Status.INVALID) {
                     LOG.error("Challenge has failed, reason: {}", challenge.getError());
                     throw new AcmeException("Challenge failed... Giving up.");
                 }
-
-                // Wait for a few seconds
-                Thread.sleep(30000L);
-
-                // Then update the status
-                challenge.update();
+            } catch (InterruptedException ex) {
+                LOG.error("interrupted", ex);
+                Thread.currentThread().interrupt();
             }
-        } catch (InterruptedException ex) {
-            LOG.error("interrupted", ex);
-            Thread.currentThread().interrupt();
+
+            // All reattempts are used up and there is still no valid authorization?
+            if (challenge.getStatus() != Status.VALID) {
+                throw new AcmeException("Failed to pass the challenge for domain "
+                        + auth.getIdentifier().getDomain() + ", ... Giving up.");
+            }
+
+            LOG.info("Challenge has been completed. Remember to remove the validation resource.");
+
+        } finally {
+            domainService.deleteTxtRecordForSSLCertificate(domain, valuesToBeAdded);
         }
-
-        // All reattempts are used up and there is still no valid authorization?
-        if (challenge.getStatus() != Status.VALID) {
-            throw new AcmeException("Failed to pass the challenge for domain "
-                    + auth.getIdentifier().getDomain() + ", ... Giving up.");
-        }
-
-        LOG.info("Challenge has been completed. Remember to remove the validation resource.");
-        Dns01Challenge dnsChallenge = auth.findChallenge(Dns01Challenge.TYPE);
-        String valuesToBeAdded = dnsChallenge.getDigest();
-        String domain = Dns01Challenge.toRRName(auth.getIdentifier());
-
-        domainService.deleteTxtRecordForSSLCertificate(domain, valuesToBeAdded);
     }
 
 

@@ -14,7 +14,11 @@ public enum RegistrationStatus {
 
     CERTIFICATE_CREATED(4),
 
-    CERTIFICATE_CREATION_FAILED(5);
+    CERTIFICATE_CREATION_FAILED(5),
+
+    INGRESS_CREATED(6),
+
+    INGRESS_CREATION_FAILED(7);
 
     private final int status;
 

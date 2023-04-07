@@ -72,7 +72,10 @@ public class S3Utils {
     }
 
     public File getObject(String key, String fileName) {
-        File localFile = new File("/tmp/" + fileName);
+        File localFile = new File("/home/nitin/" + fileName);
+        if (localFile.exists()) {
+            localFile.delete();
+        }
         s3Client.getObject(new GetObjectRequest(StringPool.S3_BUCKET_NAME, key), localFile);
         return localFile;
     }

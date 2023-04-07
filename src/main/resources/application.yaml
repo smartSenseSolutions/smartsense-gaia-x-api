@@ -46,4 +46,8 @@ aws:
   secretKey: ${AWS_SECRET_KEY}
   hostedZoneId: ${HOSTED_ZONE_ID}
   serverIp: ${SERVER_IP}
-  baseDomain: {BASE_DOMAIN}
+  baseDomain: { BASE_DOMAIN }
+k8s:
+  basePath: ${K8S_BASE_PATH}
+  token: ${K8S_TOKEN}
+  serviceName: ${K8S_SERVICE_NAME}

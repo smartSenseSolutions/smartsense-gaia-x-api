@@ -7,6 +7,7 @@ package com.smartsense.gaiax.controller;
 import com.smartsense.gaiax.dao.entity.Enterprise;
 import com.smartsense.gaiax.request.RegisterRequest;
 import com.smartsense.gaiax.service.domain.DomainService;
+import com.smartsense.gaiax.service.enterprise.EnterpriseService;
 import com.smartsense.gaiax.service.enterprise.RegistrationService;
 import com.smartsense.gaiax.service.k8s.K8SService;
 import com.smartsense.gaiax.service.ssl.CertificateService;
@@ -14,6 +15,7 @@ import io.kubernetes.client.openapi.ApiException;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import org.quartz.SchedulerException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,18 +36,27 @@ public class GaiaXController {
 
     private final K8SService k8SService;
 
+    private final EnterpriseService enterpriseService;
 
-    public GaiaXController(RegistrationService registrationService, DomainService domainService, CertificateService certificateService, K8SService k8SService) {
+
+    public GaiaXController(RegistrationService registrationService, DomainService domainService, CertificateService certificateService, K8SService k8SService, EnterpriseService enterpriseService) {
         this.registrationService = registrationService;
         this.domainService = domainService;
         this.certificateService = certificateService;
         this.k8SService = k8SService;
+        this.enterpriseService = enterpriseService;
     }
 
     @Operation(summary = "For testing purpose only")
     @GetMapping(path = "test")
     public String test() {
         return "total enterprise ->" + registrationService.test();
+    }
+
+    @Operation(summary = "Get .well-known files")
+    @GetMapping(path = ".well-known/{fileName}")
+    public String getEnterpriseFiles(@PathVariable(name = "fileName") String fileName, @RequestHeader(name = HttpHeaders.HOST) String host) throws IOException {
+        return enterpriseService.getEnterpriseFiles(host, fileName);
     }
 
     @Operation(summary = "Register enterprise in the system. This will save enterprise data in database and create job to create subdomain")
@@ -65,14 +76,14 @@ public class GaiaXController {
     @Operation(summary = "Will be removed. to test create subdomain in standalone mode")
     @GetMapping(path = "certificate/{enterpriseId}")
     public String createCertificate(@PathVariable(name = "enterpriseId") long enterpriseId) {
-        certificateService.fetchCertificate(enterpriseId);
+        certificateService.createSSLCertificate(enterpriseId);
         return "Created";
     }
 
 
-    @Operation(summary = "Will be removed. to test create subdomain in standalone mode")
+    @Operation(summary = "Will be removed. to test create ingress")
     @GetMapping(path = "tls/{enterpriseId}")
-    public String createTlsSecret(@PathVariable(name = "enterpriseId") long enterpriseId) throws IOException, ApiException {
+    public String createIngress(@PathVariable(name = "enterpriseId") long enterpriseId) throws IOException, ApiException {
         k8SService.createIngress(enterpriseId);
         return "Created";
     }
