@@ -76,7 +76,7 @@ public class GaiaXController {
     @Operation(summary = "Will be removed. to test create subdomain in standalone mode")
     @GetMapping(path = "certificate/{enterpriseId}")
     public String createCertificate(@PathVariable(name = "enterpriseId") long enterpriseId) {
-        certificateService.createSSLCertificate(enterpriseId);
+        certificateService.createSSLCertificate(enterpriseId, null);
         return "Created";
     }
 
