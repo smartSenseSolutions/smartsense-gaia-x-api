@@ -12,6 +12,7 @@ import com.smartsense.gaiax.dto.StringPool;
 import com.smartsense.gaiax.service.domain.DomainService;
 import com.smartsense.gaiax.service.job.ScheduleService;
 import com.smartsense.gaiax.utils.S3Utils;
+import org.quartz.JobKey;
 import org.shredzone.acme4j.*;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.Dns01Challenge;
@@ -66,7 +67,7 @@ public class CertificateService {
 
     private final ScheduleService scheduleService;
 
-    public void createSSLCertificate(long enterpriseId) {
+    public void createSSLCertificate(long enterpriseId, JobKey jobKey) {
         Enterprise enterprise = enterpriseRepository.findById(enterpriseId).orElse(null);
         if (enterprise == null) {
             LOGGER.error("Invalid enterprise id");
@@ -170,13 +171,14 @@ public class CertificateService {
             enterpriseCertificateRepository.save(enterpriseCertificate);
 
             //create Job tp create ingress and tls secret
-            scheduleService.createJob(enterpriseId, StringPool.JOB_TYPE_CREATE_INGRESS);
+            scheduleService.createJob(enterpriseId, StringPool.JOB_TYPE_CREATE_INGRESS, 0);
+            //delete job
+            scheduleService.deleteJob(jobKey);
         } catch (Exception e) {
             LOGGER.error("Can not create certificate for enterprise ->{}, domain ->{}", enterpriseId, enterprise.getSubDomainName(), e);
             enterprise.setStatus(RegistrationStatus.CERTIFICATE_CREATION_FAILED.getStatus());
         } finally {
             enterpriseRepository.save(enterprise);
-
             //delete files
             if (domainChainFile.exists()) {
                 domainChainFile.delete();

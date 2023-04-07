@@ -24,7 +24,15 @@ public class ScheduleService {
         this.scheduler = scheduler;
     }
 
-    public void createJob(long enterpriseId, String type) throws SchedulerException {
+    public void deleteJob(JobKey jobKey) {
+        try {
+            scheduler.deleteJob(jobKey);
+        } catch (SchedulerException e) {
+            LOGGER.error("Can not delete job with key-{}", jobKey.getName());
+        }
+    }
+
+    public void createJob(long enterpriseId, String type, int count) throws SchedulerException {
         JobDetail job = JobBuilder.newJob(ScheduledJobBean.class)
                 .withIdentity(UUID.randomUUID().toString(), type)
                 .storeDurably()
@@ -37,7 +45,7 @@ public class ScheduleService {
                 .forJob(job)
                 .withIdentity(UUID.randomUUID().toString(), type)
                 .startAt(new Date(System.currentTimeMillis() + 10000)) //start after 10 sec
-                .withSchedule(SimpleScheduleBuilder.simpleSchedule())
+                .withSchedule(SimpleScheduleBuilder.simpleSchedule().withRepeatCount(count))
                 .build();
         scheduler.scheduleJob(job, activateEnterpriseUserTrigger);
         LOGGER.debug("{}: job created for enterprise id->{}", type, enterpriseId);

@@ -42,7 +42,7 @@ public class ScheduledJobBean extends QuartzJobBean {
         if (jobType.equals(StringPool.JOB_TYPE_CREATE_SUB_DOMAIN)) {
             domainService.createSubDomain(jobDetail.getJobDataMap().getLong(StringPool.ENTERPRISE_ID));
         } else if (jobType.equals(StringPool.JOB_TYPE_CREATE_CERTIFICATE)) {
-            certificateService.createSSLCertificate(jobDetail.getJobDataMap().getLong(StringPool.ENTERPRISE_ID));
+            certificateService.createSSLCertificate(jobDetail.getJobDataMap().getLong(StringPool.ENTERPRISE_ID), jobDetail.getKey());
         } else if (jobType.equals(StringPool.JOB_TYPE_CREATE_INGRESS)) {
             k8SService.createIngress(jobDetail.getJobDataMap().getLong(StringPool.ENTERPRISE_ID));
         } else {

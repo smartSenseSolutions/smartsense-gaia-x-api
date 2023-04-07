@@ -127,7 +127,7 @@ public class DomainService {
 
             //create job to create certificate
             try {
-                scheduleService.createJob(enterpriseId, StringPool.JOB_TYPE_CREATE_CERTIFICATE);
+                scheduleService.createJob(enterpriseId, StringPool.JOB_TYPE_CREATE_CERTIFICATE, 3); //try for 3 time for certificate
             } catch (SchedulerException e) {
                 LOGGER.error("Can not create certificate creation job for enterprise->{}", enterprise, e);
                 enterprise.setStatus(RegistrationStatus.CERTIFICATE_CREATION_FAILED.getStatus());

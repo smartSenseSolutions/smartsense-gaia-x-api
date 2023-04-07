@@ -69,7 +69,7 @@ public class RegistrationService {
                 .build());
 
         //create job to create subdomain
-        scheduleService.createJob(enterprise.getId(), StringPool.JOB_TYPE_CREATE_SUB_DOMAIN);
+        scheduleService.createJob(enterprise.getId(), StringPool.JOB_TYPE_CREATE_SUB_DOMAIN, 0);
         return enterprise;
     }
 }
