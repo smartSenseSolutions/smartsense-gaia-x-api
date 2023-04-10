@@ -195,7 +195,7 @@ public class CertificateService {
             String certificateChainS3Key = enterpriseId + "/x509CertificateChain.pem";
             String csrS3Key = enterpriseId + "/" + csrFile.getName();
             String keyS3Key = enterpriseId + "/" + keyfile.getName();
-            String pkcs8FileS3Key = "pkcs8_" + keyS3Key;
+            String pkcs8FileS3Key = enterpriseId + "/pkcs8_" + keyfile.getName();
 
 
             //convert private key in pkcs8 format
