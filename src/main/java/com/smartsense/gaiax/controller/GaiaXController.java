@@ -110,13 +110,12 @@ public class GaiaXController {
     /**
      * List enterprise common response.
      *
-     * @param registerRequest the register request
      * @return the common response
      * @throws SchedulerException the scheduler exception
      */
     @Operation(summary = "get all enterprises, pagination, search and sort will be added")
     @GetMapping(path = "enterprises", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse<List<Enterprise>> listEnterprise(@RequestBody @Valid RegisterRequest registerRequest) throws SchedulerException {
+    public CommonResponse<List<Enterprise>> listEnterprise() throws SchedulerException {
         return CommonResponse.of(enterpriseService.listEnterprise());
     }
 

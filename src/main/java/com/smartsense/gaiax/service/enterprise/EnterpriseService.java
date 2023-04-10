@@ -49,9 +49,9 @@ public class EnterpriseService {
     public Enterprise getEnterprise(long id) {
         //TODO more details to added
         Enterprise enterprise = enterpriseRepository.findById(id).orElseThrow(EntityNotFoundException::new);
-        enterprise.setDidJson("https://" + enterprise.getSubDomainName() + ".well-known/did.json");
-        enterprise.setParticipantJson("https://" + enterprise.getSubDomainName() + ".well-known/participant.json");
-        enterprise.setCertificateChain("https://" + enterprise.getSubDomainName() + ".well-known/x509CertificateChain.json");
+        enterprise.setDidJson("https://" + enterprise.getSubDomainName() + "/.well-known/did.json");
+        enterprise.setParticipantJson("https://" + enterprise.getSubDomainName() + "/.well-known/participant.json");
+        enterprise.setCertificateChain("https://" + enterprise.getSubDomainName() + "/.well-known/x509CertificateChain.json");
         return enterprise;
     }
 
