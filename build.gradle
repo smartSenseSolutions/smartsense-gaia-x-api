@@ -54,6 +54,12 @@ dependencies {
     implementation group: 'com.amazonaws', name: 'aws-java-sdk-s3', version: '1.12.441'
 
     implementation 'io.kubernetes:client-java:18.0.0'
+
+    implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign', version: '4.0.2'
+
+    implementation group: 'org.json', name: 'json', version: '20230227'
+
+
 }
 
 tasks.named('test') {

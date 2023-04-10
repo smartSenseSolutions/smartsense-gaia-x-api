@@ -10,8 +10,8 @@ import com.smartsense.gaiax.service.domain.DomainService;
 import com.smartsense.gaiax.service.enterprise.EnterpriseService;
 import com.smartsense.gaiax.service.enterprise.RegistrationService;
 import com.smartsense.gaiax.service.k8s.K8SService;
+import com.smartsense.gaiax.service.signer.SignerService;
 import com.smartsense.gaiax.service.ssl.CertificateService;
-import io.kubernetes.client.openapi.ApiException;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import org.quartz.SchedulerException;
@@ -38,13 +38,16 @@ public class GaiaXController {
 
     private final EnterpriseService enterpriseService;
 
+    private final SignerService signerService;
 
-    public GaiaXController(RegistrationService registrationService, DomainService domainService, CertificateService certificateService, K8SService k8SService, EnterpriseService enterpriseService) {
+
+    public GaiaXController(RegistrationService registrationService, DomainService domainService, CertificateService certificateService, K8SService k8SService, EnterpriseService enterpriseService, SignerService signerService) {
         this.registrationService = registrationService;
         this.domainService = domainService;
         this.certificateService = certificateService;
         this.k8SService = k8SService;
         this.enterpriseService = enterpriseService;
+        this.signerService = signerService;
     }
 
     @Operation(summary = "For testing purpose only")
@@ -83,8 +86,22 @@ public class GaiaXController {
 
     @Operation(summary = "Will be removed. to test create ingress")
     @GetMapping(path = "tls/{enterpriseId}")
-    public String createIngress(@PathVariable(name = "enterpriseId") long enterpriseId) throws IOException, ApiException {
+    public String createIngress(@PathVariable(name = "enterpriseId") long enterpriseId) {
         k8SService.createIngress(enterpriseId);
+        return "Created";
+    }
+
+    @Operation(summary = "Will be removed. to test create did")
+    @GetMapping(path = "did/{enterpriseId}")
+    public String createDid(@PathVariable(name = "enterpriseId") long enterpriseId) {
+        signerService.createDid(enterpriseId);
+        return "Created";
+    }
+
+    @Operation(summary = "Will be removed. to test create participant json")
+    @GetMapping(path = "participant/{enterpriseId}")
+    public String createParticipantJson(@PathVariable(name = "enterpriseId") long enterpriseId) {
+        signerService.createParticipantJson(enterpriseId);
         return "Created";
     }
 }

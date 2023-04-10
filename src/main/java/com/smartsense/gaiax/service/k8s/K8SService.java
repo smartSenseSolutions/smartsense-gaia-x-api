@@ -10,7 +10,9 @@ import com.smartsense.gaiax.dao.entity.EnterpriseCertificate;
 import com.smartsense.gaiax.dao.repository.EnterpriseCertificateRepository;
 import com.smartsense.gaiax.dao.repository.EnterpriseRepository;
 import com.smartsense.gaiax.dto.RegistrationStatus;
+import com.smartsense.gaiax.dto.StringPool;
 import com.smartsense.gaiax.exception.BadDataException;
+import com.smartsense.gaiax.service.job.ScheduleService;
 import com.smartsense.gaiax.utils.S3Utils;
 import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.openapi.Configuration;
@@ -19,6 +21,7 @@ import io.kubernetes.client.openapi.apis.NetworkingV1Api;
 import io.kubernetes.client.openapi.models.*;
 import io.kubernetes.client.util.Config;
 import io.kubernetes.client.util.Yaml;
+import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -42,11 +45,14 @@ public class K8SService {
 
     private final K8SSettings k8SSettings;
 
-    public K8SService(EnterpriseRepository enterpriseRepository, EnterpriseCertificateRepository enterpriseCertificateRepository, S3Utils s3Util, K8SSettings k8SSettings) {
+    private final ScheduleService scheduleService;
+
+    public K8SService(EnterpriseRepository enterpriseRepository, EnterpriseCertificateRepository enterpriseCertificateRepository, S3Utils s3Util, K8SSettings k8SSettings, ScheduleService scheduleService) {
         this.enterpriseRepository = enterpriseRepository;
         this.enterpriseCertificateRepository = enterpriseCertificateRepository;
         this.s3Util = s3Util;
         this.k8SSettings = k8SSettings;
+        this.scheduleService = scheduleService;
     }
 
     public void createIngress(long enterpriseId) {
@@ -146,6 +152,12 @@ public class K8SService {
             enterprise.setStatus(RegistrationStatus.INGRESS_CREATED.getStatus());
 
             LOGGER.debug("Ingress created for enterprise -> {} and domain ->{}", enterpriseId, enterprise.getSubDomainName());
+            try {
+                scheduleService.createJob(enterpriseId, StringPool.JOB_TYPE_CREATE_DID, 0);
+            } catch (SchedulerException e) {
+                LOGGER.error("Can not create did creation job for enterprise->{}", enterprise, e);
+                enterprise.setStatus(RegistrationStatus.DID_JSON_CREATION_FAILED.getStatus());
+            }
         } catch (Exception e) {
             LOGGER.error("Can not create ingress for enterprise -> {}", enterpriseId, e);
             enterprise.setStatus(RegistrationStatus.INGRESS_CREATION_FAILED.getStatus());

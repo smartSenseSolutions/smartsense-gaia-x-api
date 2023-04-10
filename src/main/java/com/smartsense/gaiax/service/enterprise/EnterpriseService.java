@@ -7,6 +7,7 @@ package com.smartsense.gaiax.service.enterprise;
 import com.smartsense.gaiax.dao.entity.Enterprise;
 import com.smartsense.gaiax.dao.repository.EnterpriseRepository;
 import com.smartsense.gaiax.exception.BadDataException;
+import com.smartsense.gaiax.exception.EntityNotFoundException;
 import com.smartsense.gaiax.utils.S3Utils;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -34,6 +35,11 @@ public class EnterpriseService {
     public String getEnterpriseFiles(String hostName, String fileName) throws IOException {
         File file = null;
         try {
+            //Restrict key and csr file download
+            //TODO can be improved by storing private key in more secure place
+            if (fileName.endsWith("key") || fileName.endsWith("csr")) {
+                throw new EntityNotFoundException("Can find file -> " + fileName);
+            }
             Enterprise enterprise = enterpriseRepository.getBySubDomainName(hostName);
             if (enterprise == null) {
                 throw new BadDataException("Can not find subdomain -> " + hostName);

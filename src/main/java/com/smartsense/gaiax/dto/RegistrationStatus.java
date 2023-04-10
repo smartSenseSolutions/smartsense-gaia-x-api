@@ -18,7 +18,14 @@ public enum RegistrationStatus {
 
     INGRESS_CREATED(6),
 
-    INGRESS_CREATION_FAILED(7);
+    INGRESS_CREATION_FAILED(7),
+
+    DID_JSON_CREATED(8),
+
+    DID_JSON_CREATION_FAILED(9),
+
+    PARTICIPANT_JSON_CREATED(10),
+    PARTICIPANT_JSON_CREATION_FAILED(11);
 
     private final int status;
 

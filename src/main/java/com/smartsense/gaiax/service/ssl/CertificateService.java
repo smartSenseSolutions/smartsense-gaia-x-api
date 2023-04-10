@@ -24,7 +24,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import javax.swing.*;
 import java.io.*;
 import java.net.URL;
 import java.security.KeyPair;
@@ -80,6 +79,7 @@ public class CertificateService {
         File domainChainFile = new File("/tmp/" + domain + "_chain.crt");
         File csrFile = new File("/tmp/" + domain + ".csr");
         File keyfile = new File("/tmp/" + domain + ".key");
+        File pkcs8File = new File("/tmp/pkcs8_" + domain + ".key");
 
         try {
 
@@ -191,24 +191,31 @@ public class CertificateService {
 
             LOG.info("Success! The certificate for domains {} has been generated!", domain);
             LOG.info("Certificate URL: {}", certificate.getLocation());
-            
-            String certificateChain = enterpriseId + "/x509CertificateChain.pem";
-            String csr = enterpriseId + "/" + csrFile.getName();
-            String keyFile = enterpriseId + "/" + keyfile.getName();
+
+            String certificateChainS3Key = enterpriseId + "/x509CertificateChain.pem";
+            String csrS3Key = enterpriseId + "/" + csrFile.getName();
+            String keyS3Key = enterpriseId + "/" + keyfile.getName();
+            String pkcs8FileS3Key = "pkcs8_" + keyS3Key;
+
+
+            //convert private key in pkcs8 format
+            convertKeyFileInPKCS8(keyfile.getAbsolutePath(), pkcs8File.getAbsolutePath(), enterpriseId);
+
             //save files in s3
-            s3Utils.uploadFile(certificateChain, domainChainFile);
-            s3Utils.uploadFile(csr, csrFile);
-            s3Utils.uploadFile(keyFile, keyfile);
+            s3Utils.uploadFile(certificateChainS3Key, domainChainFile);
+            s3Utils.uploadFile(csrS3Key, csrFile);
+            s3Utils.uploadFile(keyS3Key, keyfile);
+            s3Utils.uploadFile(pkcs8FileS3Key, pkcs8File);
 
 
             enterprise.setStatus(RegistrationStatus.CERTIFICATE_CREATED.getStatus());
 
             //save certificate location
             EnterpriseCertificate enterpriseCertificate = EnterpriseCertificate.builder()
-                    .certificateChain(certificateChain)
+                    .certificateChain(certificateChainS3Key)
                     .enterpriseId(enterpriseId)
-                    .csr(csr)
-                    .privateKey(keyFile)
+                    .csr(csrS3Key)
+                    .privateKey(keyS3Key)
                     .build();
             enterpriseCertificateRepository.save(enterpriseCertificate);
 
@@ -339,8 +346,9 @@ public class CertificateService {
             challenge.trigger();
 
             // Poll for the challenge to complete.
+            //TODO known issue, sometime certificate issuing not working
             try {
-                int attempts = 6;
+                int attempts = 3;
                 while (challenge.getStatus() != Status.VALID && attempts-- > 0) {
                     LOGGER.debug("Waiting for 30 sec before check of DNS record attempts -> {}", attempts);
                     // Wait for a few seconds
@@ -400,16 +408,20 @@ public class CertificateService {
         return challenge;
     }
 
-    /**
-     * Presents the instructions for removing the challenge validation, and waits for
-     * dismissal.
-     *
-     * @param message Instructions to be shown in the dialog
-     */
-    public void completeChallenge(String message) throws AcmeException {
-        JOptionPane.showMessageDialog(null,
-                message,
-                "Complete Challenge",
-                JOptionPane.INFORMATION_MESSAGE);
+
+    private void convertKeyFileInPKCS8(String file, String outputFile, long enterpriseId) {
+        try {
+            ProcessBuilder pb = new ProcessBuilder("openssl", "pkcs8", "-topk8", "-in", file, "-nocrypt", "-out", outputFile);
+            Process p = pb.start();
+            int exitCode = p.waitFor();
+            if (exitCode == 0) {
+                LOGGER.debug("key file converted in pkcs8 format foe enterprise id->{}", enterpriseId);
+            } else {
+                LOGGER.error("Can not convert file in pccs8 formate for enterprise->{}", enterpriseId);
+            }
+        } catch (Exception e) {
+            LOGGER.error("Can not convert file in pccs8 formate for enterprise->{}", enterpriseId, e);
+        }
+
     }
 }

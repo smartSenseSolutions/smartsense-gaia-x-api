@@ -7,6 +7,7 @@ package com.smartsense.gaiax.service.job;
 import com.smartsense.gaiax.dto.StringPool;
 import com.smartsense.gaiax.service.domain.DomainService;
 import com.smartsense.gaiax.service.k8s.K8SService;
+import com.smartsense.gaiax.service.signer.SignerService;
 import com.smartsense.gaiax.service.ssl.CertificateService;
 import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobDetail;
@@ -28,10 +29,13 @@ public class ScheduledJobBean extends QuartzJobBean {
 
     private final K8SService k8SService;
 
-    public ScheduledJobBean(DomainService domainService, CertificateService certificateService, K8SService k8SService) {
+    private final SignerService signerService;
+
+    public ScheduledJobBean(DomainService domainService, CertificateService certificateService, K8SService k8SService, SignerService signerService) {
         this.domainService = domainService;
         this.certificateService = certificateService;
         this.k8SService = k8SService;
+        this.signerService = signerService;
     }
 
     @Override
@@ -45,6 +49,10 @@ public class ScheduledJobBean extends QuartzJobBean {
             certificateService.createSSLCertificate(jobDetail.getJobDataMap().getLong(StringPool.ENTERPRISE_ID), jobDetail.getKey());
         } else if (jobType.equals(StringPool.JOB_TYPE_CREATE_INGRESS)) {
             k8SService.createIngress(jobDetail.getJobDataMap().getLong(StringPool.ENTERPRISE_ID));
+        } else if (jobType.equals(StringPool.JOB_TYPE_CREATE_DID)) {
+            signerService.createDid(jobDetail.getJobDataMap().getLong(StringPool.ENTERPRISE_ID));
+        } else if (jobType.equals(StringPool.JOB_TYPE_CREATE_PARTICIPANT)) {
+            signerService.createParticipantJson(jobDetail.getJobDataMap().getLong(StringPool.ENTERPRISE_ID));
         } else {
             LOGGER.error("Invalid job type -> {}", jobType);
         }

@@ -17,8 +17,7 @@ import com.smartsense.gaiax.dto.StringPool;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.sql.Date;
-import java.time.LocalDate;
+import java.util.Date;
 
 @Service
 public class S3Utils {
@@ -68,7 +67,11 @@ public class S3Utils {
      * @return the pre signed url
      */
     public String getPreSignedUrl(String objectName) {
-        return s3Client.generatePresignedUrl(StringPool.S3_BUCKET_NAME, objectName, Date.valueOf(LocalDate.now().plusDays(3))).toString();
+        Date expiration = new java.util.Date();
+        long expTimeMillis = expiration.getTime();
+        expTimeMillis += 20000; // 10 seconds
+        expiration.setTime(expTimeMillis);
+        return s3Client.generatePresignedUrl(StringPool.S3_BUCKET_NAME, objectName, expiration).toString();
     }
 
     public File getObject(String key, String fileName) {
