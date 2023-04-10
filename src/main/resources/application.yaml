@@ -87,3 +87,5 @@ k8s:
   basePath: ${K8S_BASE_PATH}
   token: ${K8S_TOKEN}
   serviceName: ${K8S_SERVICE_NAME}
+signer:
+  host: ${SIGNER_API_HOST}
