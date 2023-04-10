@@ -51,7 +51,7 @@ public class EnterpriseService {
         Enterprise enterprise = enterpriseRepository.findById(id).orElseThrow(EntityNotFoundException::new);
         enterprise.setDidJson("https://" + enterprise.getSubDomainName() + "/.well-known/did.json");
         enterprise.setParticipantJson("https://" + enterprise.getSubDomainName() + "/.well-known/participant.json");
-        enterprise.setCertificateChain("https://" + enterprise.getSubDomainName() + "/.well-known/x509CertificateChain.json");
+        enterprise.setCertificateChain("https://" + enterprise.getSubDomainName() + "/.well-known/x509CertificateChain.pem");
         return enterprise;
     }
 
@@ -61,7 +61,7 @@ public class EnterpriseService {
      * @return the list
      */
     public List<Enterprise> listEnterprise() {
-        return enterpriseRepository.findAll(Sort.by(Sort.Direction.DESC, "created_at"));
+        return enterpriseRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
     }
 
     /**
