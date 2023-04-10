@@ -6,12 +6,10 @@ package com.smartsense.gaiax.utils;
 
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSCredentialsProvider;
-import com.amazonaws.auth.SystemPropertiesCredentialsProvider;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.GetObjectRequest;
-import com.amazonaws.services.s3.model.S3Object;
 import com.smartsense.gaiax.config.AWSSettings;
 import com.smartsense.gaiax.dto.StringPool;
 import org.springframework.stereotype.Service;
@@ -19,10 +17,18 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.util.Date;
 
+/**
+ * The type S 3 utils.
+ */
 @Service
 public class S3Utils {
     private final AmazonS3 s3Client;
 
+    /**
+     * Instantiates a new S 3 utils.
+     *
+     * @param awsSettings the aws settings
+     */
     public S3Utils(AWSSettings awsSettings) {
         s3Client = AmazonS3ClientBuilder.standard().
                 withRegion(Regions.US_EAST_1).
@@ -74,34 +80,17 @@ public class S3Utils {
         return s3Client.generatePresignedUrl(StringPool.S3_BUCKET_NAME, objectName, expiration).toString();
     }
 
+    /**
+     * Gets object.
+     *
+     * @param key      the key
+     * @param fileName the file name
+     * @return the object
+     */
     public File getObject(String key, String fileName) {
-        File localFile = new File("/home/nitin/" + fileName);
-        if (localFile.exists()) {
-            localFile.delete();
-        }
+        File localFile = new File("/tmp/" + fileName);
+        CommonUtils.deleteFile(localFile);
         s3Client.getObject(new GetObjectRequest(StringPool.S3_BUCKET_NAME, key), localFile);
         return localFile;
-    }
-
-    /**
-     * Object exist boolean.
-     *
-     * @param objectName the object name
-     * @return the boolean
-     */
-    public boolean doesObjectExist(String objectName) {
-        return s3Client.doesObjectExist(StringPool.S3_BUCKET_NAME, objectName);
-    }
-
-    private S3Object getS3Object(String objectName) {
-        AmazonS3 myS3 = AmazonS3ClientBuilder.standard().
-                withRegion(Regions.AP_SOUTH_1).withCredentials(new SystemPropertiesCredentialsProvider()).
-                build();
-        S3Object s3Object = myS3.getObject(StringPool.S3_BUCKET_NAME, objectName);
-        if (s3Object == null) {
-            System.out.println("Can not find s3 object");
-            return null;
-        }
-        return s3Object;
     }
 }

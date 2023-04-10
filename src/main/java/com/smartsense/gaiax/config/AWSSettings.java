@@ -10,6 +10,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 /**
+ * The type Aws settings.
+ *
  * @author Nitin
  * @version 1.0
  */

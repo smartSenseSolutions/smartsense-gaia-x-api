@@ -11,6 +11,7 @@ import com.smartsense.gaiax.dto.RegistrationStatus;
 import com.smartsense.gaiax.dto.StringPool;
 import com.smartsense.gaiax.service.domain.DomainService;
 import com.smartsense.gaiax.service.job.ScheduleService;
+import com.smartsense.gaiax.utils.CommonUtils;
 import com.smartsense.gaiax.utils.S3Utils;
 import org.quartz.JobKey;
 import org.shredzone.acme4j.*;
@@ -48,7 +49,20 @@ public class CertificateService {
     private static final int KEY_SIZE = 2048;
 
     private static final Logger LOG = LoggerFactory.getLogger(CertificateService.class);
+    /**
+     * The constant CAN_NOT_CONVERT_FILE_IN_PCCS_8_FORMATE_FOR_ENTERPRISE.
+     */
+    public static final String CAN_NOT_CONVERT_FILE_IN_PCCS_8_FORMATE_FOR_ENTERPRISE = "Can not convert file in pccs8 formate for enterprise->{}";
 
+    /**
+     * Instantiates a new Certificate service.
+     *
+     * @param domainService                   the domain service
+     * @param enterpriseRepository            the enterprise repository
+     * @param s3Utils                         the s 3 utils
+     * @param enterpriseCertificateRepository the enterprise certificate repository
+     * @param scheduleService                 the schedule service
+     */
     public CertificateService(DomainService domainService, EnterpriseRepository enterpriseRepository, S3Utils s3Utils, EnterpriseCertificateRepository enterpriseCertificateRepository, ScheduleService scheduleService) {
         this.domainService = domainService;
         this.enterpriseRepository = enterpriseRepository;
@@ -57,7 +71,16 @@ public class CertificateService {
         this.scheduleService = scheduleService;
     }
 
-    private enum ChallengeType {HTTP, DNS}
+    private enum ChallengeType {
+        /**
+         * Http challenge type.
+         */
+        HTTP,
+        /**
+         * Dns challenge type.
+         */
+        DNS
+    }
 
     private final DomainService domainService;
 
@@ -69,6 +92,12 @@ public class CertificateService {
 
     private final ScheduleService scheduleService;
 
+    /**
+     * Create ssl certificate.
+     *
+     * @param enterpriseId the enterprise id
+     * @param jobKey       the job key
+     */
     public void createSSLCertificate(long enterpriseId, JobKey jobKey) {
         Enterprise enterprise = enterpriseRepository.findById(enterpriseId).orElse(null);
         if (enterprise == null) {
@@ -120,26 +149,7 @@ public class CertificateService {
             order.execute(csrb.getEncoded());
 
             // Wait for the order to complete
-            try {
-                int attempts = 10;
-                while (order.getStatus() != Status.VALID && attempts-- > 0) {
-                    LOGGER.debug("Waiting for order confirmation attempts->{}", attempts);
-                    // Did the order fail?
-                    if (order.getStatus() == Status.INVALID) {
-                        LOG.error("Order has failed, reason: {}", order.getError());
-                        throw new AcmeException("Order failed... Giving up.");
-                    }
-
-                    // Wait for a few seconds
-                    Thread.sleep(6000L);
-
-                    // Then update the status
-                    order.update();
-                }
-            } catch (InterruptedException ex) {
-                LOG.error("interrupted", ex);
-                Thread.currentThread().interrupt();
-            }
+            checkOrderStatus(order);
 
             // Get the certificate
             Certificate certificate = order.getCertificate();
@@ -239,16 +249,30 @@ public class CertificateService {
         } finally {
             enterpriseRepository.save(enterprise);
             //delete files
-            if (domainChainFile.exists()) {
-                domainChainFile.delete();
-            }
-            if (csrFile.exists()) {
-                csrFile.delete();
-            }
-            if (keyfile.exists()) {
-                keyfile.delete();
-            }
+            CommonUtils.deleteFile(domainChainFile, csrFile, keyfile, pkcs8File);
+        }
+    }
 
+    private static void checkOrderStatus(Order order) throws AcmeException {
+        try {
+            int attempts = 10;
+            while (order.getStatus() != Status.VALID && attempts-- > 0) {
+                LOGGER.debug("Waiting for order confirmation attempts->{}", attempts);
+                // Did the order fail?
+                if (order.getStatus() == Status.INVALID) {
+                    LOG.error("Order has failed, reason: {}", order.getError());
+                    throw new AcmeException("Order failed... Giving up.");
+                }
+
+                // Wait for a few seconds
+                Thread.sleep(6000L);
+
+                // Then update the status
+                order.update();
+            }
+        } catch (InterruptedException ex) {
+            LOG.error("interrupted", ex);
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -424,10 +448,13 @@ public class CertificateService {
             if (exitCode == 0) {
                 LOGGER.debug("key file converted in pkcs8 format foe enterprise id->{}", enterpriseId);
             } else {
-                LOGGER.error("Can not convert file in pccs8 formate for enterprise->{}", enterpriseId);
+                LOGGER.error(CAN_NOT_CONVERT_FILE_IN_PCCS_8_FORMATE_FOR_ENTERPRISE, enterpriseId);
             }
-        } catch (Exception e) {
-            LOGGER.error("Can not convert file in pccs8 formate for enterprise->{}", enterpriseId, e);
+        } catch (InterruptedException e) {
+            LOGGER.error(CAN_NOT_CONVERT_FILE_IN_PCCS_8_FORMATE_FOR_ENTERPRISE, enterpriseId, e);
+            Thread.currentThread().interrupt();
+        } catch (IOException e) {
+            LOGGER.error(CAN_NOT_CONVERT_FILE_IN_PCCS_8_FORMATE_FOR_ENTERPRISE, enterpriseId, e);
         }
 
     }

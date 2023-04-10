@@ -25,16 +25,29 @@ import org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
+/**
+ * The type Application config.
+ */
 @Configuration
 public class ApplicationConfig implements WebMvcConfigurer {
 
 
     private final String resourceBundlePath;
 
+    /**
+     * Instantiates a new Application config.
+     *
+     * @param resourceBundlePath the resource bundle path
+     */
     public ApplicationConfig(@Value("${resource.bundle.path:classpath:i18n/language}") String resourceBundlePath) {
         this.resourceBundlePath = resourceBundlePath;
     }
 
+    /**
+     * Object mapper object mapper.
+     *
+     * @return the object mapper
+     */
     @Bean
     public ObjectMapper objectMapper() {
         ObjectMapper objectMapper = new ObjectMapper();
@@ -45,6 +58,11 @@ public class ApplicationConfig implements WebMvcConfigurer {
         return objectMapper;
     }
 
+    /**
+     * Message source message source.
+     *
+     * @return the message source
+     */
     @Bean
     public MessageSource messageSource() {
         ReloadableResourceBundleMessageSource bean = new ReloadableResourceBundleMessageSource();
@@ -53,6 +71,11 @@ public class ApplicationConfig implements WebMvcConfigurer {
         return bean;
     }
 
+    /**
+     * Validator local validator factory bean.
+     *
+     * @return the local validator factory bean
+     */
     @Bean
     public LocalValidatorFactoryBean validator() {
         LocalValidatorFactoryBean beanValidatorFactory = new LocalValidatorFactoryBean();
@@ -62,6 +85,11 @@ public class ApplicationConfig implements WebMvcConfigurer {
     }
 
 
+    /**
+     * Locale resolver locale resolver.
+     *
+     * @return the locale resolver
+     */
     @Bean
     public LocaleResolver localeResolver() {
         AcceptHeaderLocaleResolver localeResolver = new AcceptHeaderLocaleResolver();
@@ -70,6 +98,7 @@ public class ApplicationConfig implements WebMvcConfigurer {
     }
 
     @Nullable
+    @Override
     public Validator getValidator() {
         return validator();
     }

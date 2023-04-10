@@ -14,16 +14,29 @@ import org.springframework.stereotype.Service;
 import java.util.Date;
 import java.util.UUID;
 
+/**
+ * The type Schedule service.
+ */
 @Service
 public class ScheduleService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ScheduleService.class);
 
     private final Scheduler scheduler;
 
+    /**
+     * Instantiates a new Schedule service.
+     *
+     * @param scheduler the scheduler
+     */
     public ScheduleService(Scheduler scheduler) {
         this.scheduler = scheduler;
     }
 
+    /**
+     * Delete job.
+     *
+     * @param jobKey the job key
+     */
     public void deleteJob(JobKey jobKey) {
         try {
             scheduler.deleteJob(jobKey);
@@ -33,6 +46,14 @@ public class ScheduleService {
         }
     }
 
+    /**
+     * Create job.
+     *
+     * @param enterpriseId the enterprise id
+     * @param type         the type
+     * @param count        the count
+     * @throws SchedulerException the scheduler exception
+     */
     public void createJob(long enterpriseId, String type, int count) throws SchedulerException {
         JobDetail job = JobBuilder.newJob(ScheduledJobBean.class)
                 .withIdentity(UUID.randomUUID().toString(), type)

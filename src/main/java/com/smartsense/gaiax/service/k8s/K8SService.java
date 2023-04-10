@@ -13,6 +13,7 @@ import com.smartsense.gaiax.dto.RegistrationStatus;
 import com.smartsense.gaiax.dto.StringPool;
 import com.smartsense.gaiax.exception.BadDataException;
 import com.smartsense.gaiax.service.job.ScheduleService;
+import com.smartsense.gaiax.utils.CommonUtils;
 import com.smartsense.gaiax.utils.S3Utils;
 import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.openapi.Configuration;
@@ -20,7 +21,6 @@ import io.kubernetes.client.openapi.apis.CoreV1Api;
 import io.kubernetes.client.openapi.apis.NetworkingV1Api;
 import io.kubernetes.client.openapi.models.*;
 import io.kubernetes.client.util.Config;
-import io.kubernetes.client.util.Yaml;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,10 +32,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * The type K 8 s service.
+ */
 @Service
 public class K8SService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(K8SService.class);
+    /**
+     * The constant DEFAULT.
+     */
+    public static final String DEFAULT = "default";
 
     private final EnterpriseRepository enterpriseRepository;
 
@@ -47,6 +54,15 @@ public class K8SService {
 
     private final ScheduleService scheduleService;
 
+    /**
+     * Instantiates a new K 8 s service.
+     *
+     * @param enterpriseRepository            the enterprise repository
+     * @param enterpriseCertificateRepository the enterprise certificate repository
+     * @param s3Util                          the s 3 util
+     * @param k8SSettings                     the k 8 s settings
+     * @param scheduleService                 the schedule service
+     */
     public K8SService(EnterpriseRepository enterpriseRepository, EnterpriseCertificateRepository enterpriseCertificateRepository, S3Utils s3Util, K8SSettings k8SSettings, ScheduleService scheduleService) {
         this.enterpriseRepository = enterpriseRepository;
         this.enterpriseCertificateRepository = enterpriseCertificateRepository;
@@ -55,6 +71,11 @@ public class K8SService {
         this.scheduleService = scheduleService;
     }
 
+    /**
+     * Create ingress.
+     *
+     * @param enterpriseId the enterprise id
+     */
     public void createIngress(long enterpriseId) {
         File crt = null;
         File key = null;
@@ -67,7 +88,6 @@ public class K8SService {
             key = s3Util.getObject(enterpriseCertificate.getPrivateKey(), "private.key");
             //Step 1: create secret using SSL certificate
             ApiClient client = Config.fromToken(k8SSettings.getBasePath(), k8SSettings.getToken(), false);
-            //ApiClient client = Config.defaultClient();
             Configuration.setDefaultApiClient(client);
 
 
@@ -87,7 +107,7 @@ public class K8SService {
             secret.putDataItem("tls.key", keyString.getBytes());
 
 
-            V1Secret aDefault = api.createNamespacedSecret("default", secret, null, null, null, null);
+            api.createNamespacedSecret(DEFAULT, secret, null, null, null, null);
             LOGGER.debug("tls secret created for enterprise -{} domain ->{}", enterpriseId, enterprise.getSubDomainName());
 
             ///annotations
@@ -103,7 +123,7 @@ public class K8SService {
             NetworkingV1Api networkingV1Api = new NetworkingV1Api();
             V1ObjectMeta metadata = new V1ObjectMeta();
             metadata.setName(enterprise.getSubDomainName());
-            metadata.setNamespace("default");
+            metadata.setNamespace(DEFAULT);
             metadata.setAnnotations(annotations);
 
             //tls item
@@ -145,30 +165,27 @@ public class K8SService {
             v1Ingress.metadata(metadata);
             v1Ingress.setSpec(spec);
 
-            String dump = Yaml.dump(v1Ingress);
-            System.out.println(dump);
-            networkingV1Api.createNamespacedIngress("default", v1Ingress, null, null, null, null);
+            networkingV1Api.createNamespacedIngress(DEFAULT, v1Ingress, null, null, null, null);
 
             enterprise.setStatus(RegistrationStatus.INGRESS_CREATED.getStatus());
 
             LOGGER.debug("Ingress created for enterprise -> {} and domain ->{}", enterpriseId, enterprise.getSubDomainName());
-            try {
-                scheduleService.createJob(enterpriseId, StringPool.JOB_TYPE_CREATE_DID, 0);
-            } catch (SchedulerException e) {
-                LOGGER.error("Can not create did creation job for enterprise->{}", enterprise, e);
-                enterprise.setStatus(RegistrationStatus.DID_JSON_CREATION_FAILED.getStatus());
-            }
+            createDidcreationJob(enterpriseId, enterprise);
         } catch (Exception e) {
             LOGGER.error("Can not create ingress for enterprise -> {}", enterpriseId, e);
             enterprise.setStatus(RegistrationStatus.INGRESS_CREATION_FAILED.getStatus());
         } finally {
             enterpriseRepository.save(enterprise);
-            if (crt != null && crt.exists()) {
-                crt.delete();
-            }
-            if (key != null && key.exists()) {
-                key.delete();
-            }
+            CommonUtils.deleteFile(crt, key);
+        }
+    }
+
+    private void createDidcreationJob(long enterpriseId, Enterprise enterprise) {
+        try {
+            scheduleService.createJob(enterpriseId, StringPool.JOB_TYPE_CREATE_DID, 0);
+        } catch (SchedulerException e) {
+            LOGGER.error("Can not create did creation job for enterprise->{}", enterprise, e);
+            enterprise.setStatus(RegistrationStatus.DID_JSON_CREATION_FAILED.getStatus());
         }
     }
 }

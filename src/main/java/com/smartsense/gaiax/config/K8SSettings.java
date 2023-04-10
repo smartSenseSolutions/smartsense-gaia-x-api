@@ -9,6 +9,9 @@ import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * The type K 8 s settings.
+ */
 @ConfigurationProperties(prefix = "k8s")
 @Configuration
 @Getter

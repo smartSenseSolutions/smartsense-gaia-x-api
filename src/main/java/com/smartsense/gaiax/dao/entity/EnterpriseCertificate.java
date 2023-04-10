@@ -7,6 +7,9 @@ package com.smartsense.gaiax.dao.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+/**
+ * The type Enterprise certificate.
+ */
 @Entity
 @Getter
 @Setter

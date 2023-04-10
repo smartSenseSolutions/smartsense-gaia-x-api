@@ -19,6 +19,8 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
+ * The type Registration service.
+ *
  * @author Nitin
  * @version 1.0
  */
@@ -31,16 +33,35 @@ public class RegistrationService {
 
     private final AWSSettings awsSettings;
 
+    /**
+     * Instantiates a new Registration service.
+     *
+     * @param enterpriseRepository the enterprise repository
+     * @param scheduleService      the schedule service
+     * @param awsSettings          the aws settings
+     */
     public RegistrationService(EnterpriseRepository enterpriseRepository, ScheduleService scheduleService, AWSSettings awsSettings) {
         this.enterpriseRepository = enterpriseRepository;
         this.scheduleService = scheduleService;
         this.awsSettings = awsSettings;
     }
 
+    /**
+     * Test long.
+     *
+     * @return the long
+     */
     public long test() {
         return enterpriseRepository.count();
     }
 
+    /**
+     * Register enterprise enterprise.
+     *
+     * @param registerRequest the register request
+     * @return the enterprise
+     * @throws SchedulerException the scheduler exception
+     */
     @Transactional(isolation = Isolation.SERIALIZABLE, propagation = Propagation.REQUIRES_NEW)
     public Enterprise registerEnterprise(RegisterRequest registerRequest) throws SchedulerException {
         //check legal name

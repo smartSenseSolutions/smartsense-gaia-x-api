@@ -8,6 +8,9 @@ package com.smartsense.gaiax.dao.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+/**
+ * The type Enterprise.
+ */
 @Entity
 @Getter
 @Setter
@@ -48,5 +51,14 @@ public class Enterprise extends SuperEntity {
 
     @Column(nullable = false)
     private Integer status;
+
+    @Transient
+    private String didJson;
+
+    @Transient
+    private String participantJson;
+
+    @Transient
+    private String certificateChain;
 
 }

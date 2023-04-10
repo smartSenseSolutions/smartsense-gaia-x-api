@@ -8,6 +8,9 @@ import jakarta.persistence.*;
 import lombok.*;
 
 
+/**
+ * The type Enterprise credential.
+ */
 @Entity
 @Getter
 @Setter

@@ -7,6 +7,7 @@ package com.smartsense.gaiax.config;
 import com.smartsense.gaiax.dto.CommonResponse;
 import com.smartsense.gaiax.dto.ErrorResponse;
 import com.smartsense.gaiax.dto.ValidationErrorResponse;
+import com.smartsense.gaiax.exception.SecurityException;
 import com.smartsense.gaiax.exception.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
@@ -30,13 +31,14 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.lang.SecurityException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 
+/**
+ * The type Rest exception handler.
+ */
 @RestControllerAdvice
 public class RestExceptionHandler {
 
@@ -45,7 +47,10 @@ public class RestExceptionHandler {
      */
     public static final String HANDLE_ENTITY_EXCEPTION_ERROR = "handleEntityException: Error";
     private static final String INTERNAL_SERVER_ERROR = "internal.server.error";
-    private static final String AI_ML_ERROR = "aiml.server.error";
+    /**
+     * The constant ERROR.
+     */
+    public static final String ERROR = "error";
     private final MessageSource messageSource;
     private final Logger log = LoggerFactory.getLogger(RestExceptionHandler.class);
 
@@ -74,7 +79,7 @@ public class RestExceptionHandler {
         String message = messageSource.getMessage(INTERNAL_SERVER_ERROR, new Object[]{}, LocaleContextHolder.getLocale());
 
         Map<String, Object> map = new HashMap<>();
-        map.put("error", new ErrorResponse(message, HttpStatus.INTERNAL_SERVER_ERROR.value()));
+        map.put(ERROR, new ErrorResponse(message, HttpStatus.INTERNAL_SERVER_ERROR.value()));
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(CommonResponse.builder(map).message(message).status(HttpStatus.INTERNAL_SERVER_ERROR.value()).build());
     }
 
@@ -97,7 +102,7 @@ public class RestExceptionHandler {
             msg = exception.getMessage();
         }
 
-        map.put("error", new ErrorResponse(msg, HttpStatus.UNAUTHORIZED.value()));
+        map.put(ERROR, new ErrorResponse(msg, HttpStatus.UNAUTHORIZED.value()));
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(CommonResponse.builder(map).message(msg).status(HttpStatus.UNAUTHORIZED.value()).build());
     }
 
@@ -124,7 +129,7 @@ public class RestExceptionHandler {
         }
 
         Map<String, Object> map = new HashMap<>();
-        map.put("error", new ErrorResponse(msg, HttpStatus.BAD_REQUEST.value()));
+        map.put(ERROR, new ErrorResponse(msg, HttpStatus.BAD_REQUEST.value()));
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(CommonResponse.builder(map).message(msg).status(HttpStatus.BAD_REQUEST.value()).build());
     }
 
@@ -139,7 +144,7 @@ public class RestExceptionHandler {
     public ResponseEntity<CommonResponse<Map<String, Object>>> handleNotFound(Exception exception) {
         log.error(HANDLE_ENTITY_EXCEPTION_ERROR, exception);
         Map<String, Object> map = new HashMap<>();
-        map.put("error", new ErrorResponse(exception.getMessage(), HttpStatus.NOT_FOUND.value()));
+        map.put(ERROR, new ErrorResponse(exception.getMessage(), HttpStatus.NOT_FOUND.value()));
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(CommonResponse.builder(map).message(exception.getMessage()).status(HttpStatus.NOT_FOUND.value()).build());
     }
 
@@ -152,7 +157,7 @@ public class RestExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler({MethodArgumentNotValidException.class})
     public ResponseEntity<CommonResponse<Map<String, Object>>> handleValidation(MethodArgumentNotValidException exception) {
-        List<FieldError> fieldErrors = exception.getBindingResult().getAllErrors().stream().map(error -> (FieldError) error).collect(Collectors.toList());
+        List<FieldError> fieldErrors = exception.getBindingResult().getAllErrors().stream().map(error -> (FieldError) error).toList();
         return handleValidationError(fieldErrors);
 
     }
@@ -167,7 +172,7 @@ public class RestExceptionHandler {
     @ExceptionHandler({ConstraintViolationException.class})
     public ResponseEntity<CommonResponse<Object>> handleValidation(ConstraintViolationException exception) {
         log.error(HANDLE_ENTITY_EXCEPTION_ERROR, exception.getMessage());
-        List<String> fieldErrors = exception.getConstraintViolations().stream().map(ConstraintViolation::getMessage).collect(Collectors.toList());
+        List<String> fieldErrors = exception.getConstraintViolations().stream().map(ConstraintViolation::getMessage).toList();
         return ResponseEntity.badRequest().body(CommonResponse.builder(new Object()).message(fieldErrors.get(0)).status(HttpStatus.BAD_REQUEST.value()).build());
     }
 
@@ -181,23 +186,9 @@ public class RestExceptionHandler {
     @ExceptionHandler({BindException.class})
     public ResponseEntity<CommonResponse<Map<String, Object>>> handleValidation(BindException exception) {
         log.error(HANDLE_ENTITY_EXCEPTION_ERROR, exception.getMessage());
-        List<FieldError> fieldErrors = exception.getBindingResult().getAllErrors().stream().map(error -> (FieldError) error).collect(Collectors.toList());
+        List<FieldError> fieldErrors = exception.getBindingResult().getAllErrors().stream().map(error -> (FieldError) error).toList();
         return handleValidationError(fieldErrors);
 
-    }
-
-    private String getMessage(Exception exception) {
-        String errorMessage;
-        try {
-            errorMessage = messageSource.getMessage(exception.getMessage(), null, LocaleContextHolder.getLocale());
-        } catch (NoSuchMessageException e) {
-            if (exception instanceof HttpMessageNotReadableException) {
-                errorMessage = "Invalid data";
-            } else {
-                errorMessage = exception.getMessage();
-            }
-        }
-        return errorMessage;
     }
 
     /**
@@ -209,7 +200,7 @@ public class RestExceptionHandler {
         Map<String, String> messages = new HashMap<>();
         fieldErrors.forEach(fieldError -> messages.put(fieldError.getField(), fieldError.getDefaultMessage()));
         Map<String, Object> map = new HashMap<>();
-        map.put("error", new ValidationErrorResponse(messages, HttpStatus.BAD_REQUEST.value(), "Validation failed"));
+        map.put(ERROR, new ValidationErrorResponse(messages, HttpStatus.BAD_REQUEST.value(), "Validation failed"));
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(CommonResponse.builder(map).message(messages.entrySet().iterator().next().getValue()).status(HttpStatus.BAD_REQUEST.value()).build());
     }
 }

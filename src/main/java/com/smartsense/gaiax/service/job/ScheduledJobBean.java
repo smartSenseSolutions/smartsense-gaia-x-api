@@ -17,6 +17,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 import org.springframework.stereotype.Component;
 
+/**
+ * The type Scheduled job bean.
+ */
 @Component
 @DisallowConcurrentExecution
 public class ScheduledJobBean extends QuartzJobBean {
@@ -31,6 +34,14 @@ public class ScheduledJobBean extends QuartzJobBean {
 
     private final SignerService signerService;
 
+    /**
+     * Instantiates a new Scheduled job bean.
+     *
+     * @param domainService      the domain service
+     * @param certificateService the certificate service
+     * @param k8SService         the k 8 s service
+     * @param signerService      the signer service
+     */
     public ScheduledJobBean(DomainService domainService, CertificateService certificateService, K8SService k8SService, SignerService signerService) {
         this.domainService = domainService;
         this.certificateService = certificateService;

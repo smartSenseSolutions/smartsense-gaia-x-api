@@ -6,6 +6,7 @@ package com.smartsense.gaiax.service.domain;
 
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSCredentialsProvider;
+import com.amazonaws.regions.Regions;
 import com.amazonaws.services.route53.AmazonRoute53;
 import com.amazonaws.services.route53.AmazonRoute53ClientBuilder;
 import com.amazonaws.services.route53.model.*;
@@ -23,6 +24,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 /**
+ * The type Domain service.
+ *
  * @author Nitin
  * @version 1.0
  */
@@ -40,6 +43,13 @@ public class DomainService {
 
     private final ScheduleService scheduleService;
 
+    /**
+     * Instantiates a new Domain service.
+     *
+     * @param awsSettings          the aws settings
+     * @param enterpriseRepository the enterprise repository
+     * @param scheduleService      the schedule service
+     */
     public DomainService(AWSSettings awsSettings, EnterpriseRepository enterpriseRepository, ScheduleService scheduleService) {
         this.awsSettings = awsSettings;
         this.enterpriseRepository = enterpriseRepository;
@@ -48,6 +58,13 @@ public class DomainService {
     }
 
 
+    /**
+     * Update txt records.
+     *
+     * @param domainName the domain name
+     * @param value      the value
+     * @param action     the action
+     */
     public void updateTxtRecords(String domainName, String value, ChangeAction action) {
         ResourceRecord resourceRecord = new ResourceRecord();
         resourceRecord.setValue("\"" + value + "\"");
@@ -72,11 +89,18 @@ public class DomainService {
         try {
             Thread.sleep(10000);
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            LOGGER.error("Interrupted!", e);
+            Thread.currentThread().interrupt();
         }
         LOGGER.info("TXT record updated -> {}, result-> {}", domainName, result);
     }
 
+    /**
+     * Delete txt record for ssl certificate.
+     *
+     * @param domainName the domain name
+     * @param value      the value
+     */
     public void deleteTxtRecordForSSLCertificate(String domainName, String value) {
         try {
             updateTxtRecords(domainName, value, ChangeAction.DELETE);
@@ -87,6 +111,12 @@ public class DomainService {
     }
 
 
+    /**
+     * Create txt record for ssl certificate.
+     *
+     * @param domainName the domain name
+     * @param value      the value
+     */
     public void createTxtRecordForSSLCertificate(String domainName, String value) {
         try {
             updateTxtRecords(domainName, value, ChangeAction.CREATE);
@@ -96,6 +126,11 @@ public class DomainService {
         LOGGER.info("TXT record created -> {} ", domainName);
     }
 
+    /**
+     * Create sub domain.
+     *
+     * @param enterpriseId the enterprise id
+     */
     public void createSubDomain(long enterpriseId) {
         Enterprise enterprise = enterpriseRepository.findById(enterpriseId).orElse(null);
         if (enterprise == null) {
@@ -126,17 +161,21 @@ public class DomainService {
             enterprise.setStatus(RegistrationStatus.DOMAIN_CREATED.getStatus());
 
             //create job to create certificate
-            try {
-                scheduleService.createJob(enterpriseId, StringPool.JOB_TYPE_CREATE_CERTIFICATE, 3); //try for 3 time for certificate
-            } catch (SchedulerException e) {
-                LOGGER.error("Can not create certificate creation job for enterprise->{}", enterprise, e);
-                enterprise.setStatus(RegistrationStatus.CERTIFICATE_CREATION_FAILED.getStatus());
-            }
+            createCertificateCreationJob(enterpriseId, enterprise);
         } catch (Exception e) {
             LOGGER.error("Can not create sub domain for enterprise->{}", enterpriseId, e);
             enterprise.setStatus(RegistrationStatus.DOMAIN_CREATION_FAILED.getStatus());
         } finally {
             enterpriseRepository.save(enterprise);
+        }
+    }
+
+    private void createCertificateCreationJob(long enterpriseId, Enterprise enterprise) {
+        try {
+            scheduleService.createJob(enterpriseId, StringPool.JOB_TYPE_CREATE_CERTIFICATE, 3); //try for 3 time for certificate
+        } catch (SchedulerException e) {
+            LOGGER.error("Can not create certificate creation job for enterprise->{}", enterprise, e);
+            enterprise.setStatus(RegistrationStatus.CERTIFICATE_CREATION_FAILED.getStatus());
         }
     }
 
@@ -162,7 +201,7 @@ public class DomainService {
 
                     }
                 })
-                .withRegion("us-east-1")
+                .withRegion(Regions.US_EAST_1)
                 .build();
     }
 }

@@ -18,6 +18,9 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.util.Date;
 
+/**
+ * The type Super entity.
+ */
 @MappedSuperclass
 @Getter
 @Setter

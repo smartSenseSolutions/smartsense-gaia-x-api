@@ -10,6 +10,9 @@ import lombok.Setter;
 
 import java.util.Map;
 
+/**
+ * The type Create participant request.
+ */
 @Getter
 @Setter
 @Builder

@@ -9,6 +9,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
+ * The type Register request.
+ *
  * @author Nitin
  * @version 1.0
  */

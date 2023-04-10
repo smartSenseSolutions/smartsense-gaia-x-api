@@ -13,12 +13,27 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.Map;
 
+/**
+ * The interface Signer client.
+ */
 @FeignClient(value = "Signerapi", url = "${signer.host}")
 public interface SignerClient {
 
+    /**
+     * Create did response entity.
+     *
+     * @param createDidRequest the create did request
+     * @return the response entity
+     */
     @PostMapping(path = "createWebDID", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Map<String, Object>> createDid(@RequestBody CreateDidRequest createDidRequest);
 
+    /**
+     * On board to gaia x response entity.
+     *
+     * @param request the request
+     * @return the response entity
+     */
     @PostMapping(path = "onBoardToGaiaX", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Map<String, Object>> onBoardToGaiaX(@RequestBody CreateParticipantRequest request);
 }

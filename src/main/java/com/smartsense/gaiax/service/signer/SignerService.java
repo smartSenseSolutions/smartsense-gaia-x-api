@@ -14,6 +14,7 @@ import com.smartsense.gaiax.dto.RegistrationStatus;
 import com.smartsense.gaiax.dto.StringPool;
 import com.smartsense.gaiax.exception.BadDataException;
 import com.smartsense.gaiax.service.job.ScheduleService;
+import com.smartsense.gaiax.utils.CommonUtils;
 import com.smartsense.gaiax.utils.S3Utils;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -26,6 +27,9 @@ import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * The type Signer service.
+ */
 @Service
 public class SignerService {
 
@@ -41,6 +45,15 @@ public class SignerService {
 
     private final ScheduleService scheduleService;
 
+    /**
+     * Instantiates a new Signer service.
+     *
+     * @param enterpriseRepository the enterprise repository
+     * @param signerClient         the signer client
+     * @param s3Utils              the s 3 utils
+     * @param objectMapper         the object mapper
+     * @param scheduleService      the schedule service
+     */
     public SignerService(EnterpriseRepository enterpriseRepository, SignerClient signerClient, S3Utils s3Utils, ObjectMapper objectMapper, ScheduleService scheduleService) {
         this.enterpriseRepository = enterpriseRepository;
         this.signerClient = signerClient;
@@ -49,6 +62,11 @@ public class SignerService {
         this.scheduleService = scheduleService;
     }
 
+    /**
+     * Create participant json.
+     *
+     * @param enterpriseId the enterprise id
+     */
     public void createParticipantJson(long enterpriseId) {
         File file = new File("/tmp/participant.json");
         Enterprise enterprise = enterpriseRepository.findById(enterpriseId).orElseThrow(BadDataException::new);
@@ -76,13 +94,16 @@ public class SignerService {
             LOGGER.error("Error while creating participant json for enterprise -{}", enterpriseId, e);
             enterprise.setStatus(RegistrationStatus.PARTICIPANT_JSON_CREATION_FAILED.getStatus());
         } finally {
-            if (file.exists()) {
-                file.delete();
-            }
             enterpriseRepository.save(enterprise);
+            CommonUtils.deleteFile(file);
         }
     }
 
+    /**
+     * Create did.
+     *
+     * @param enterpriseId the enterprise id
+     */
     public void createDid(long enterpriseId) {
         File file = new File("/tmp/did.json");
         Enterprise enterprise = enterpriseRepository.findById(enterpriseId).orElseThrow(BadDataException::new);
@@ -97,20 +118,22 @@ public class SignerService {
             s3Utils.uploadFile(enterpriseId + "/did.json", file);
             enterprise.setStatus(RegistrationStatus.DID_JSON_CREATED.getStatus());
             LOGGER.debug("Did created for enterprise->{} , did ->{}", enterpriseId, didString);
-            try {
-                scheduleService.createJob(enterpriseId, StringPool.JOB_TYPE_CREATE_PARTICIPANT, 0);
-                enterprise.setStatus(RegistrationStatus.PARTICIPANT_JSON_CREATION_FAILED.getStatus());
-            } catch (Exception e) {
-                LOGGER.error("Can not create participant job for enterprise -{}", enterpriseId, e);
-            }
+            createParticipantCreationJob(enterpriseId, enterprise);
         } catch (Exception e) {
             LOGGER.error("Error while creating did json for enterprise -{}", enterpriseId, e);
             enterprise.setStatus(RegistrationStatus.DID_JSON_CREATION_FAILED.getStatus());
         } finally {
-            if (file.exists()) {
-                file.delete();
-            }
             enterpriseRepository.save(enterprise);
+            CommonUtils.deleteFile(file);
+        }
+    }
+
+    private void createParticipantCreationJob(long enterpriseId, Enterprise enterprise) {
+        try {
+            scheduleService.createJob(enterpriseId, StringPool.JOB_TYPE_CREATE_PARTICIPANT, 0);
+            enterprise.setStatus(RegistrationStatus.PARTICIPANT_JSON_CREATION_FAILED.getStatus());
+        } catch (Exception e) {
+            LOGGER.error("Can not create participant job for enterprise -{}", enterpriseId, e);
         }
     }
 }

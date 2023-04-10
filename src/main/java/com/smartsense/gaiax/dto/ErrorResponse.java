@@ -4,6 +4,9 @@
 
 package com.smartsense.gaiax.dto;
 
+/**
+ * The type Error response.
+ */
 public class ErrorResponse {
     private String message;
 
