@@ -210,13 +210,20 @@ public class CertificateService {
 
             enterprise.setStatus(RegistrationStatus.CERTIFICATE_CREATED.getStatus());
 
+            EnterpriseCertificate enterpriseCertificate = enterpriseCertificateRepository.getByEnterpriseId(enterpriseId);
+            if (enterpriseCertificate == null) {
+                enterpriseCertificate = EnterpriseCertificate.builder()
+                        .certificateChain(certificateChainS3Key)
+                        .enterpriseId(enterpriseId)
+                        .csr(csrS3Key)
+                        .privateKey(keyS3Key)
+                        .build();
+            } else {
+                enterpriseCertificate.setCertificateChain(certificateChainS3Key);
+                enterpriseCertificate.setCsr(csrS3Key);
+                enterpriseCertificate.setPrivateKey(pkcs8FileS3Key);
+            }
             //save certificate location
-            EnterpriseCertificate enterpriseCertificate = EnterpriseCertificate.builder()
-                    .certificateChain(certificateChainS3Key)
-                    .enterpriseId(enterpriseId)
-                    .csr(csrS3Key)
-                    .privateKey(keyS3Key)
-                    .build();
             enterpriseCertificateRepository.save(enterpriseCertificate);
 
             //create Job tp create ingress and tls secret
