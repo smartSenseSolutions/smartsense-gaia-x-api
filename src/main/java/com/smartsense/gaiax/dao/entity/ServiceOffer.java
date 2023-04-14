@@ -5,18 +5,20 @@
 package com.smartsense.gaiax.dao.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.Map;
+import java.util.Set;
 
+/**
+ * The type Service offer.
+ */
 @Getter
 @Setter
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class ServiceOffer extends SuperEntity {
 
     @Id
@@ -40,7 +42,8 @@ public class ServiceOffer extends SuperEntity {
 
     private String license;
 
-    private String policy;
+    @Convert(converter = StringToSetConvertor.class)
+    private Set<String> policy;
 
     private String expirationDate;
 

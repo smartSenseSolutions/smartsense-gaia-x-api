@@ -76,3 +76,14 @@ CREATE TABLE public.service_offer (
 	CONSTRAINT service_offer_fk FOREIGN KEY (enterprise_id) REFERENCES public.enterprise(id),
 	CONSTRAINT service_offer_fk_1 FOREIGN KEY (credential_id) REFERENCES public.enterprise_credential(id)
 );
+
+--changeset Nitin:3
+ALTER TABLE public.enterprise_credential ALTER COLUMN credentials TYPE text USING credentials::text;
+
+--changeset Nitin:4
+CREATE TABLE public.admin (
+	id bigserial NOT NULL,
+	user_name varchar(255) NOT NULL,
+	password varchar(1000) NOT NULL,
+	CONSTRAINT admin_pkey PRIMARY KEY (id)
+);

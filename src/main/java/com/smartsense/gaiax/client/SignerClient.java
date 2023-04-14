@@ -35,5 +35,7 @@ public interface SignerClient {
      * @return the response entity
      */
     @PostMapping(path = "onBoardToGaiaX", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    ResponseEntity<Map<String, Object>> onBoardToGaiaX(@RequestBody CreateParticipantRequest request);
+    ResponseEntity<Map<String, Object>> createVc(@RequestBody CreateVCRequest request);
+
+
 }

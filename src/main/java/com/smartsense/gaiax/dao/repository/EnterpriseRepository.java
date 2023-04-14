@@ -52,4 +52,12 @@ public interface EnterpriseRepository extends JpaRepository<Enterprise, Long> {
      * @return the by sub domain name
      */
     Enterprise getBySubDomainName(String hostName);
+
+    /**
+     * Gets by email.
+     *
+     * @param email the email
+     * @return the by email
+     */
+    Enterprise getByEmail(String email);
 }

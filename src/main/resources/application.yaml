@@ -89,3 +89,5 @@ k8s:
   serviceName: ${K8S_SERVICE_NAME}
 signer:
   host: ${SIGNER_API_HOST}
+jwt:
+  tokenSigningKey: ${JWT_TOKEN_SIGNING_KEY}

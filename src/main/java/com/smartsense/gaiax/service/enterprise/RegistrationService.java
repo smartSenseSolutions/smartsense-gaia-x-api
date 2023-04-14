@@ -13,6 +13,7 @@ import com.smartsense.gaiax.request.RegisterRequest;
 import com.smartsense.gaiax.service.job.ScheduleService;
 import com.smartsense.gaiax.utils.Validate;
 import org.quartz.SchedulerException;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
@@ -86,7 +87,7 @@ public class RegistrationService {
                 .legalRegistrationType(registerRequest.getLegalRegistrationType())
                 .status(RegistrationStatus.STARTED.getStatus())
                 .subDomainName(registerRequest.getSubDomainName().toLowerCase() + "." + awsSettings.getBaseDomain())
-                .password(registerRequest.getPassword()) //TODO need to create slat or use keycloak heer
+                .password(BCrypt.hashpw(registerRequest.getPassword(), BCrypt.gensalt()))
                 .build());
 
         //create job to create subdomain

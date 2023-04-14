@@ -7,8 +7,8 @@ package com.smartsense.gaiax.controller;
 import com.smartsense.gaiax.dao.entity.Enterprise;
 import com.smartsense.gaiax.dao.entity.EnterpriseCredential;
 import com.smartsense.gaiax.dao.entity.ServiceOffer;
-import com.smartsense.gaiax.dto.CommonResponse;
-import com.smartsense.gaiax.dto.CreateServiceOfferingRequest;
+import com.smartsense.gaiax.dto.*;
+import com.smartsense.gaiax.exception.SecurityException;
 import com.smartsense.gaiax.request.RegisterRequest;
 import com.smartsense.gaiax.service.domain.DomainService;
 import com.smartsense.gaiax.service.enterprise.EnterpriseService;
@@ -16,7 +16,10 @@ import com.smartsense.gaiax.service.enterprise.RegistrationService;
 import com.smartsense.gaiax.service.k8s.K8SService;
 import com.smartsense.gaiax.service.signer.SignerService;
 import com.smartsense.gaiax.service.ssl.CertificateService;
+import com.smartsense.gaiax.utils.Validate;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.quartz.SchedulerException;
 import org.springframework.http.HttpHeaders;
@@ -25,6 +28,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 
 /**
  * The type Gaia x controller.
@@ -71,15 +75,23 @@ public class GaiaXController {
         this.signerService = signerService;
     }
 
+    private void validateAccess(Set<Integer> requiredRoles, int userRole) {
+        boolean contains = requiredRoles.contains(userRole);
+        Validate.isFalse(contains).launch(new SecurityException("can not access API"));
+    }
+
     /**
-     * Test string.
+     * Register business enterprise.
      *
-     * @return the string
+     * @param registerRequest the register request
+     * @return the enterprise
+     * @throws SchedulerException the scheduler exception
      */
-    @Operation(summary = "For testing purpose only")
-    @GetMapping(path = "test")
-    public String test() {
-        return "total enterprise ->" + registrationService.test();
+    @Tag(name = "Login")
+    @Operation(summary = "Login(type=1 for login as admin, type =2 for login as enterprise)")
+    @PostMapping(path = "login", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public CommonResponse<LoginResponse> login(@RequestBody @Valid LoginRequest registerRequest) {
+        return CommonResponse.of(enterpriseService.login(registerRequest.getEmail(), registerRequest.getPassword(), registerRequest.getType()));
     }
 
     /**
@@ -90,8 +102,9 @@ public class GaiaXController {
      * @return the enterprise files
      * @throws IOException the io exception
      */
-    @Operation(summary = "Get .well-known files")
+    @Operation(summary = "Get .well-known files, this is public API")
     @GetMapping(path = ".well-known/{fileName}")
+    @Tag(name = "Well-known")
     public String getEnterpriseFiles(@PathVariable(name = "fileName") String fileName, @RequestHeader(name = HttpHeaders.HOST) String host) throws IOException {
         return enterpriseService.getEnterpriseFiles(host, fileName);
     }
@@ -100,12 +113,17 @@ public class GaiaXController {
      * Register business enterprise.
      *
      * @param registerRequest the register request
+     * @param sessionDTO      the session dto
      * @return the enterprise
      * @throws SchedulerException the scheduler exception
      */
-    @Operation(summary = "Register enterprise in the system. This will save enterprise data in database and create job to create subdomain")
+    @Operation(summary = "Register enterprise in the system. This will save enterprise data in database and create job to create subdomain, role: admin")
     @PostMapping(path = "register", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public Enterprise registerBusiness(@RequestBody @Valid RegisterRequest registerRequest) throws SchedulerException {
+    @Tag(name = "Onboarding")
+    public Enterprise registerBusiness(@RequestBody @Valid RegisterRequest registerRequest,
+                                       @Parameter(hidden = true) @RequestAttribute(value = StringPool.SESSION_DTO) SessionDTO sessionDTO
+    ) throws SchedulerException {
+        validateAccess(Set.of(StringPool.ADMIN_ROLE), sessionDTO.getRole());
         return registrationService.registerEnterprise(registerRequest);
     }
 
@@ -113,25 +131,46 @@ public class GaiaXController {
     /**
      * List enterprise common response.
      *
+     * @param sessionDTO the session dto
      * @return the common response
      * @throws SchedulerException the scheduler exception
      */
-    @Operation(summary = "get all enterprises, pagination, search and sort will be added")
-    @GetMapping(path = "enterprises", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse<List<Enterprise>> listEnterprise() throws SchedulerException {
+    @Tag(name = "Enterprise")
+    @Operation(summary = "get all enterprises, pagination, search and sort will be added, role: Admin")
+    @GetMapping(path = "enterprises/list", produces = MediaType.APPLICATION_JSON_VALUE)
+    public CommonResponse<List<Enterprise>> listEnterprise(@Parameter(hidden = true) @RequestAttribute(value = StringPool.SESSION_DTO) SessionDTO sessionDTO) {
+        validateAccess(Set.of(StringPool.ADMIN_ROLE), sessionDTO.getRole());
         return CommonResponse.of(enterpriseService.listEnterprise());
     }
+
+    /**
+     * Gets enterprise details.
+     *
+     * @param sessionDTO the session dto
+     * @return the enterprise details
+     */
+    @Tag(name = "Enterprise")
+    @Operation(summary = "get logged in user's enterprises, role: Enterprise")
+    @GetMapping(path = "enterprises", produces = MediaType.APPLICATION_JSON_VALUE)
+    public CommonResponse<Enterprise> getEnterpriseDetails(@Parameter(hidden = true) @RequestAttribute(value = StringPool.SESSION_DTO) SessionDTO sessionDTO) {
+        validateAccess(Set.of(StringPool.ENTERPRISE_ROLE), sessionDTO.getRole());
+        return CommonResponse.of(enterpriseService.getEnterprise(sessionDTO.getEnterpriseId()));
+    }
+
 
     /**
      * Gets enterprise.
      *
      * @param enterpriseId the enterprise id
+     * @param sessionDTO   the session dto
      * @return the enterprise
      * @throws SchedulerException the scheduler exception
      */
-    @Operation(summary = "Get enterprise by id")
+    @Tag(name = "Enterprise")
+    @Operation(summary = "Get enterprise by id, role admin")
     @GetMapping(path = "enterprises/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse<Enterprise> getEnterprise(@PathVariable(name = "id") long enterpriseId) throws SchedulerException {
+    public CommonResponse<Enterprise> getEnterprise(@PathVariable(name = "id") long enterpriseId, @Parameter(hidden = true) @RequestAttribute(value = StringPool.SESSION_DTO) SessionDTO sessionDTO) {
+        validateAccess(Set.of(StringPool.ADMIN_ROLE), sessionDTO.getRole());
         return CommonResponse.of(enterpriseService.getEnterprise(enterpriseId));
     }
 
@@ -140,11 +179,14 @@ public class GaiaXController {
      * Create sub domain string.
      *
      * @param enterpriseId the enterprise id
+     * @param sessionDTO   the session dto
      * @return the string
      */
-    @Operation(summary = "Will be removed. to test create subdomain in standalone mode")
+    @Tag(name = "Onboarding")
+    @Operation(summary = "Resume onboarding process from sub domain creation, role Admin")
     @GetMapping(path = "subdomain/{enterpriseId}")
-    public String createSubDomain(@PathVariable(name = "enterpriseId") long enterpriseId) {
+    public String createSubDomain(@PathVariable(name = "enterpriseId") long enterpriseId, @Parameter(hidden = true) @RequestAttribute(value = StringPool.SESSION_DTO) SessionDTO sessionDTO) {
+        validateAccess(Set.of(StringPool.ADMIN_ROLE), sessionDTO.getRole());
         domainService.createSubDomain(enterpriseId);
         return CREATED;
     }
@@ -153,11 +195,14 @@ public class GaiaXController {
      * Create certificate string.
      *
      * @param enterpriseId the enterprise id
+     * @param sessionDTO   the session dto
      * @return the string
      */
-    @Operation(summary = "Will be removed. to test create subdomain in standalone mode")
+    @Tag(name = "Onboarding")
+    @Operation(summary = "Resume onboarding process from SLL certificate creation, role = admin")
     @GetMapping(path = "certificate/{enterpriseId}")
-    public String createCertificate(@PathVariable(name = "enterpriseId") long enterpriseId) {
+    public String createCertificate(@PathVariable(name = "enterpriseId") long enterpriseId, @Parameter(hidden = true) @RequestAttribute(value = StringPool.SESSION_DTO) SessionDTO sessionDTO) {
+        validateAccess(Set.of(StringPool.ADMIN_ROLE), sessionDTO.getRole());
         certificateService.createSSLCertificate(enterpriseId, null);
         return CREATED;
     }
@@ -167,11 +212,14 @@ public class GaiaXController {
      * Create ingress string.
      *
      * @param enterpriseId the enterprise id
+     * @param sessionDTO   the session dto
      * @return the string
      */
-    @Operation(summary = "Will be removed. to test create ingress")
-    @GetMapping(path = "tls/{enterpriseId}")
-    public String createIngress(@PathVariable(name = "enterpriseId") long enterpriseId) {
+    @Tag(name = "Onboarding")
+    @Operation(summary = "Resume onboarding process from ingress creation, role = admin")
+    @GetMapping(path = "ingress/{enterpriseId}")
+    public String createIngress(@PathVariable(name = "enterpriseId") long enterpriseId, @Parameter(hidden = true) @RequestAttribute(value = StringPool.SESSION_DTO) SessionDTO sessionDTO) {
+        validateAccess(Set.of(StringPool.ADMIN_ROLE), sessionDTO.getRole());
         k8SService.createIngress(enterpriseId);
         return CREATED;
     }
@@ -180,11 +228,14 @@ public class GaiaXController {
      * Create did string.
      *
      * @param enterpriseId the enterprise id
+     * @param sessionDTO   the session dto
      * @return the string
      */
-    @Operation(summary = "Will be removed. to test create did")
+    @Tag(name = "Onboarding")
+    @Operation(summary = "Resume onboarding process from did creation, role-=admin")
     @GetMapping(path = "did/{enterpriseId}")
-    public String createDid(@PathVariable(name = "enterpriseId") long enterpriseId) {
+    public String createDid(@PathVariable(name = "enterpriseId") long enterpriseId, @Parameter(hidden = true) @RequestAttribute(value = StringPool.SESSION_DTO) SessionDTO sessionDTO) {
+        validateAccess(Set.of(StringPool.ADMIN_ROLE), sessionDTO.getRole());
         signerService.createDid(enterpriseId);
         return CREATED;
     }
@@ -193,46 +244,75 @@ public class GaiaXController {
      * Create participant json string.
      *
      * @param enterpriseId the enterprise id
+     * @param sessionDTO   the session dto
      * @return the string
      */
-    @Operation(summary = "Will be removed. to test create participant json")
+    @Tag(name = "Onboarding")
+    @Operation(summary = "Resume onboarding process from participant credential creation, role Admin")
     @GetMapping(path = "participant/{enterpriseId}")
-    public String createParticipantJson(@PathVariable(name = "enterpriseId") long enterpriseId) {
+    public String createParticipantJson(@PathVariable(name = "enterpriseId") long enterpriseId, @Parameter(hidden = true) @RequestAttribute(value = StringPool.SESSION_DTO) SessionDTO sessionDTO) {
+        validateAccess(Set.of(StringPool.ADMIN_ROLE), sessionDTO.getRole());
         signerService.createParticipantJson(enterpriseId);
         return CREATED;
     }
 
-    @Operation(summary = "Get all issued VC of enterprise")
-    @GetMapping(path = "enterprises/{enterpriseId}/vcs")
-    public CommonResponse<List<EnterpriseCredential>> getEnterpriseCredentials(@PathVariable(name = "enterpriseId") long enterpriseId) {
-        return CommonResponse.of(enterpriseService.getEnterpriseCredentials(enterpriseId));
+    /**
+     * Gets enterprise credentials.
+     *
+     * @param sessionDTO the session dto
+     * @return the enterprise credentials
+     */
+    @Tag(name = "Credentials")
+    @Operation(summary = "Get all issued VC of enterprise, role = Enterprise")
+    @GetMapping(path = "enterprises/vcs")
+    public CommonResponse<List<EnterpriseCredential>> getEnterpriseCredentials(@Parameter(hidden = true) @RequestAttribute(value = StringPool.SESSION_DTO) SessionDTO sessionDTO) {
+        validateAccess(Set.of(StringPool.ENTERPRISE_ROLE), sessionDTO.getRole());
+        return CommonResponse.of(enterpriseService.getEnterpriseCredentials(sessionDTO.getEnterpriseId()));
     }
 
-    @Operation(summary = "Create Service offering for enterprise")
-    @PostMapping(path = "enterprises/{enterpriseId}/service-offers", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse<ServiceOffer> createServiceOffering(@PathVariable(name = "enterpriseId") long enterpriseId,
+    /**
+     * Create service offering common response.
+     *
+     * @param sessionDTO the session dto
+     * @param request    the request
+     * @return the common response
+     * @throws IOException the io exception
+     */
+    @Tag(name = "Catalogue")
+    @Operation(summary = "Create Service offering for enterprise, role = enterprise")
+    @PostMapping(path = "enterprises/service-offers", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public CommonResponse<ServiceOffer> createServiceOffering(@Parameter(hidden = true) @RequestAttribute(value = StringPool.SESSION_DTO) SessionDTO sessionDTO,
                                                               @Valid @RequestBody CreateServiceOfferingRequest request
-    ) {
-        return CommonResponse.of(enterpriseService.createServiceOffering(enterpriseId, request));
+    ) throws IOException {
+        validateAccess(Set.of(StringPool.ENTERPRISE_ROLE), sessionDTO.getRole());
+        return CommonResponse.of(enterpriseService.createServiceOffering(sessionDTO.getEnterpriseId(), request));
     }
 
-    @Operation(summary = "Get service offering of enterprise")
-    @GetMapping(path = "enterprises/{enterpriseId}/service-offers", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse<List<ServiceOffer>> createServiceOffering(@PathVariable(name = "enterpriseId") long enterpriseId) {
-        return CommonResponse.of(enterpriseService.serviceOfferList(enterpriseId));
-    }
-
-    @Operation(summary = "List all service offering: Pagination, search and sort wil be added")
+    /**
+     * Create service offering common response.
+     *
+     * @param sessionDTO the session dto
+     * @return the common response
+     */
+    @Tag(name = "Catalogue")
+    @Operation(summary = "Get service offering of enterprise, role enterprise")
     @GetMapping(path = "enterprises/service-offers", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse<List<ServiceOffer>> getAllServiceOffers() {
+    public CommonResponse<List<ServiceOffer>> createServiceOffering(@Parameter(hidden = true) @RequestAttribute(value = StringPool.SESSION_DTO) SessionDTO sessionDTO) {
+        validateAccess(Set.of(StringPool.ENTERPRISE_ROLE), sessionDTO.getRole());
+        return CommonResponse.of(enterpriseService.serviceOfferList(sessionDTO.getEnterpriseId()));
+    }
+
+    /**
+     * Gets all service offers.
+     *
+     * @param sessionDTO the session dto
+     * @return the all service offers
+     */
+    @Tag(name = "Catalogue")
+    @Operation(summary = "List all service offering: Pagination, search and sort wil be added, role = enterprise")
+    @GetMapping(path = "catalogue", produces = MediaType.APPLICATION_JSON_VALUE)
+    public CommonResponse<List<ServiceOffer>> getAllServiceOffers(@Parameter(hidden = true) @RequestAttribute(value = StringPool.SESSION_DTO) SessionDTO sessionDTO) {
+        validateAccess(Set.of(StringPool.ENTERPRISE_ROLE), sessionDTO.getRole());
         return CommonResponse.of(enterpriseService.serviceOfferList());
     }
-
-
-    @Operation(summary = "Get service offering of enterprise with given offer id")
-    @GetMapping(path = "enterprises/{enterpriseId}/service-offers/{offerId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse<ServiceOffer> getServiceOfferingsDetails(@PathVariable(name = "enterpriseId") long enterpriseId, @PathVariable(name = "offerId") long offerId) {
-        return CommonResponse.of(enterpriseService.getServiceOfferingDetails(enterpriseId, offerId));
-    }
-
 }

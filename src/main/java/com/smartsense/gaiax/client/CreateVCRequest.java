@@ -16,7 +16,7 @@ import java.util.Map;
 @Getter
 @Setter
 @Builder
-public class CreateParticipantRequest {
+public class CreateVCRequest {
 
     private String domain;
 

@@ -6,7 +6,7 @@ package com.smartsense.gaiax.service.signer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.smartsense.gaiax.client.CreateDidRequest;
-import com.smartsense.gaiax.client.CreateParticipantRequest;
+import com.smartsense.gaiax.client.CreateVCRequest;
 import com.smartsense.gaiax.client.SignerClient;
 import com.smartsense.gaiax.dao.entity.Enterprise;
 import com.smartsense.gaiax.dao.entity.EnterpriseCredential;
@@ -57,7 +57,7 @@ public class SignerService {
      * @param s3Utils                        the s 3 utils
      * @param objectMapper                   the object mapper
      * @param scheduleService                the schedule service
-     * @param enterpriseCredentialRepository
+     * @param enterpriseCredentialRepository the enterprise credential repository
      */
     public SignerService(EnterpriseRepository enterpriseRepository, SignerClient signerClient, S3Utils s3Utils, ObjectMapper objectMapper, ScheduleService scheduleService, EnterpriseCredentialRepository enterpriseCredentialRepository) {
         this.enterpriseRepository = enterpriseRepository;
@@ -84,17 +84,17 @@ public class SignerService {
             data.put("legalRegistrationNumber", enterprise.getLegalRegistrationNumber());
             data.put("headquarterAddress", enterprise.getHeadquarterAddress());
             data.put("legalAddress", enterprise.getLegalAddress());
-            CreateParticipantRequest request = CreateParticipantRequest.builder()
+            CreateVCRequest request = CreateVCRequest.builder()
                     .data(data)
                     .templateId("LegalParticipant")
                     .domain(domain)
                     .privateKeyUrl(s3Utils.getPreSignedUrl(enterpriseId + "/pkcs8_" + domain + ".key"))
                     .build();
-            ResponseEntity<Map<String, Object>> responseEntity = signerClient.onBoardToGaiaX(request);
+            ResponseEntity<Map<String, Object>> responseEntity = signerClient.createVc(request);
             String participantString = objectMapper.writeValueAsString(((Map<String, Object>) responseEntity.getBody().get("data")).get("verifiableCredential"));
             FileUtils.writeStringToFile(file, participantString, Charset.defaultCharset());
             s3Utils.uploadFile(enterpriseId + "/participant.json", file);
-            
+
             EnterpriseCredential enterpriseCredential = EnterpriseCredential.builder()
                     .credentials(participantString)
                     .enterpriseId(enterpriseId)

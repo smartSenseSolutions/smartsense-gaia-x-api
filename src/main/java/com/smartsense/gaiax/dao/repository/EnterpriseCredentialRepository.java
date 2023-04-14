@@ -13,5 +13,11 @@ import java.util.List;
  * The interface Enterprise credential repository.
  */
 public interface EnterpriseCredentialRepository extends JpaRepository<EnterpriseCredential, Long> {
+    /**
+     * Gets by enterprise id.
+     *
+     * @param enterpriseId the enterprise id
+     * @return the by enterprise id
+     */
     List<EnterpriseCredential> getByEnterpriseId(long enterpriseId);
 }

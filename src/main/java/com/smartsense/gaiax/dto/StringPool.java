@@ -45,4 +45,28 @@ public interface StringPool {
      * The constant S3_BUCKET_NAME.
      */
     String S3_BUCKET_NAME = "smartsense-gaiax-mvp";
+
+    /**
+     * The constant ADMIN_ROLE.
+     */
+    int ADMIN_ROLE = 1;
+
+    /**
+     * The constant ENTERPRISE_ROLE.
+     */
+    int ENTERPRISE_ROLE = 2;
+
+    /**
+     * The constant SESSION_DTO.
+     */
+    String SESSION_DTO = "sessionDto";
+
+    /**
+     * The constant ROLE.
+     */
+    String ROLE = "role";
+    /**
+     * The constant EMAIL.
+     */
+    String EMAIL = "email";
 }

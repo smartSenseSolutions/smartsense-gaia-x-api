@@ -10,6 +10,9 @@ import lombok.Setter;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * The type Create service offering request.
+ */
 @Getter
 @Setter
 public class CreateServiceOfferingRequest {
@@ -24,5 +27,5 @@ public class CreateServiceOfferingRequest {
 
     private String expirationDate;
 
-    private Map<String, String> meta;
+    private Map<String, Object> meta;
 }

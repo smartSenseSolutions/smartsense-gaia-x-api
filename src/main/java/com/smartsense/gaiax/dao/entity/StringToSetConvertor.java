@@ -15,14 +15,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Map;
+import java.util.Set;
 
 /**
- * The type String to map convertor.
+ * The type String to set convertor.
  */
-public class StringToMapConvertor implements AttributeConverter<Map<String, Object>, String> {
+public class StringToSetConvertor implements AttributeConverter<Set<String>, String> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(StringToMapConvertor.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(StringToSetConvertor.class);
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     static {
@@ -33,12 +33,12 @@ public class StringToMapConvertor implements AttributeConverter<Map<String, Obje
     }
 
     @Override
-    public String convertToDatabaseColumn(Map<String, Object> map) {
-        if (map == null) {
+    public String convertToDatabaseColumn(Set<String> set) {
+        if (set == null) {
             return null;
         }
         try {
-            return objectMapper.writeValueAsString(map);
+            return objectMapper.writeValueAsString(set);
         } catch (JsonProcessingException ex) {
             LOGGER.error("convertToDatabaseColumn: Error", ex);
             return null;
@@ -46,15 +46,16 @@ public class StringToMapConvertor implements AttributeConverter<Map<String, Obje
     }
 
     @Override
-    public Map<String, Object> convertToEntityAttribute(String dbData) {
+    public Set<String> convertToEntityAttribute(String dbData) {
         if (StringUtils.isEmpty(dbData)) {
             return null;
         }
         try {
-            return objectMapper.readValue(dbData, Map.class);
+            return objectMapper.readValue(dbData, Set.class);
         } catch (IOException ex) {
             LOGGER.error("Unexpected IOEx decoding json from database: {}", dbData, ex);
             return null;
         }
     }
+
 }

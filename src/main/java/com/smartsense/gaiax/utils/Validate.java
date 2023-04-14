@@ -56,7 +56,7 @@ public class Validate<T> {
      *
      * @param <V>       the type parameter
      * @param condition the condition
-     * @return validate
+     * @return validate validate
      */
     public static <V> Validate<V> isFalse(boolean condition) {
         Validate<V> validate = new Validate<>();
