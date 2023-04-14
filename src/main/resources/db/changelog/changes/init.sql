@@ -54,3 +54,25 @@ CREATE TABLE public.enterprise_credential (
 	CONSTRAINT enterprise_credential_fk FOREIGN KEY (enterprise_id) REFERENCES public.enterprise(id)
 );
 CREATE INDEX enterprise_credential_enterprise_id_idx ON public.enterprise_credential USING btree (enterprise_id);
+
+
+--changeset Nitin:2
+CREATE TABLE public.service_offer (
+	id bigserial NOT NULL,
+	created_at timestamp(6) NULL,
+	updated_at timestamp(6) NULL,
+	enterprise_id bigserial NOT NULL,
+	credential_id bigserial NOT NULL,
+	subject_did varchar(255) NOT NULL,
+	"name" varchar(255) NOT NULL,
+	produced_by varchar(255) NOT NULL,
+	copyright_owned_by varchar(255) NOT NULL,
+	description varchar(255) NOT NULL,
+	license varchar(255) NOT NULL,
+	"policy" varchar(255) NOT NULL,
+	expiration_date varchar(255) NOT NULL,
+	meta text NOT NULL,
+	CONSTRAINT service_offer_pkey PRIMARY KEY (id),
+	CONSTRAINT service_offer_fk FOREIGN KEY (enterprise_id) REFERENCES public.enterprise(id),
+	CONSTRAINT service_offer_fk_1 FOREIGN KEY (credential_id) REFERENCES public.enterprise_credential(id)
+);

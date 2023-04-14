@@ -5,11 +5,17 @@
 package com.smartsense.gaiax.service.enterprise;
 
 import com.smartsense.gaiax.dao.entity.Enterprise;
+import com.smartsense.gaiax.dao.entity.EnterpriseCredential;
+import com.smartsense.gaiax.dao.entity.ServiceOffer;
+import com.smartsense.gaiax.dao.repository.EnterpriseCredentialRepository;
 import com.smartsense.gaiax.dao.repository.EnterpriseRepository;
+import com.smartsense.gaiax.dao.repository.ServiceOfferRepository;
+import com.smartsense.gaiax.dto.CreateServiceOfferingRequest;
 import com.smartsense.gaiax.exception.BadDataException;
 import com.smartsense.gaiax.exception.EntityNotFoundException;
 import com.smartsense.gaiax.utils.CommonUtils;
 import com.smartsense.gaiax.utils.S3Utils;
+import com.smartsense.gaiax.utils.Validate;
 import org.apache.commons.io.FileUtils;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -27,17 +33,25 @@ public class EnterpriseService {
 
     private final EnterpriseRepository enterpriseRepository;
 
+    private final EnterpriseCredentialRepository enterpriseCredentialRepository;
+
     private final S3Utils s3Utils;
+
+    private final ServiceOfferRepository serviceOfferRepository;
 
     /**
      * Instantiates a new Enterprise service.
      *
-     * @param enterpriseRepository the enterprise repository
-     * @param s3Utils              the s 3 utils
+     * @param enterpriseRepository           the enterprise repository
+     * @param enterpriseCredentialRepository
+     * @param s3Utils                        the s 3 utils
+     * @param serviceOfferRepository
      */
-    public EnterpriseService(EnterpriseRepository enterpriseRepository, S3Utils s3Utils) {
+    public EnterpriseService(EnterpriseRepository enterpriseRepository, EnterpriseCredentialRepository enterpriseCredentialRepository, S3Utils s3Utils, ServiceOfferRepository serviceOfferRepository) {
         this.enterpriseRepository = enterpriseRepository;
+        this.enterpriseCredentialRepository = enterpriseCredentialRepository;
         this.s3Utils = s3Utils;
+        this.serviceOfferRepository = serviceOfferRepository;
     }
 
     /**
@@ -91,5 +105,40 @@ public class EnterpriseService {
         } finally {
             CommonUtils.deleteFile(file);
         }
+    }
+
+    public ServiceOffer createServiceOffering(long enterpriseId, CreateServiceOfferingRequest request) {
+        Enterprise enterprise = enterpriseRepository.findById(enterpriseId).orElseThrow(EntityNotFoundException::new);
+
+        String did = "did:web:" + enterprise.getSubDomainName();
+
+        //TODO integrate signer tool API ro create service offering VC
+
+        //TODO store VC
+
+        //TODO store service offering
+        return null;
+    }
+
+    public List<ServiceOffer> serviceOfferList() {
+        return serviceOfferRepository.findAll();
+    }
+
+    public List<ServiceOffer> serviceOfferList(long enterpriseId) {
+        return serviceOfferRepository.getByEnterpriseId(enterpriseId);
+    }
+
+
+    public ServiceOffer getServiceOfferingDetails(long enterpriseId, long offerId) {
+        ServiceOffer serviceOffer = serviceOfferRepository.getByIdAndEnterpriseId(offerId, enterpriseId);
+        Validate.isNull(serviceOffer).launch(new EntityNotFoundException());
+        //TODO need VC?
+
+        return serviceOffer;
+    }
+
+    public List<EnterpriseCredential> getEnterpriseCredentials(long enterpriseId) {
+        enterpriseRepository.findById(enterpriseId).orElseThrow(EntityNotFoundException::new);
+        return enterpriseCredentialRepository.getByEnterpriseId(enterpriseId);
     }
 }

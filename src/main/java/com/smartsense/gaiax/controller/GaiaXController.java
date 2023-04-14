@@ -5,7 +5,10 @@
 package com.smartsense.gaiax.controller;
 
 import com.smartsense.gaiax.dao.entity.Enterprise;
+import com.smartsense.gaiax.dao.entity.EnterpriseCredential;
+import com.smartsense.gaiax.dao.entity.ServiceOffer;
 import com.smartsense.gaiax.dto.CommonResponse;
+import com.smartsense.gaiax.dto.CreateServiceOfferingRequest;
 import com.smartsense.gaiax.request.RegisterRequest;
 import com.smartsense.gaiax.service.domain.DomainService;
 import com.smartsense.gaiax.service.enterprise.EnterpriseService;
@@ -198,4 +201,38 @@ public class GaiaXController {
         signerService.createParticipantJson(enterpriseId);
         return CREATED;
     }
+
+    @Operation(summary = "Get all issued VC of enterprise")
+    @GetMapping(path = "enterprises/{enterpriseId}/vcs")
+    public CommonResponse<List<EnterpriseCredential>> getEnterpriseCredentials(@PathVariable(name = "enterpriseId") long enterpriseId) {
+        return CommonResponse.of(enterpriseService.getEnterpriseCredentials(enterpriseId));
+    }
+
+    @Operation(summary = "Create Service offering for enterprise")
+    @PostMapping(path = "enterprises/{enterpriseId}/service-offers", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public CommonResponse<ServiceOffer> createServiceOffering(@PathVariable(name = "enterpriseId") long enterpriseId,
+                                                              @Valid @RequestBody CreateServiceOfferingRequest request
+    ) {
+        return CommonResponse.of(enterpriseService.createServiceOffering(enterpriseId, request));
+    }
+
+    @Operation(summary = "Get service offering of enterprise")
+    @GetMapping(path = "enterprises/{enterpriseId}/service-offers", produces = MediaType.APPLICATION_JSON_VALUE)
+    public CommonResponse<List<ServiceOffer>> createServiceOffering(@PathVariable(name = "enterpriseId") long enterpriseId) {
+        return CommonResponse.of(enterpriseService.serviceOfferList(enterpriseId));
+    }
+
+    @Operation(summary = "List all service offering: Pagination, search and sort wil be added")
+    @GetMapping(path = "enterprises/service-offers", produces = MediaType.APPLICATION_JSON_VALUE)
+    public CommonResponse<List<ServiceOffer>> getAllServiceOffers() {
+        return CommonResponse.of(enterpriseService.serviceOfferList());
+    }
+
+
+    @Operation(summary = "Get service offering of enterprise with given offer id")
+    @GetMapping(path = "enterprises/{enterpriseId}/service-offers/{offerId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public CommonResponse<ServiceOffer> getServiceOfferingsDetails(@PathVariable(name = "enterpriseId") long enterpriseId, @PathVariable(name = "offerId") long offerId) {
+        return CommonResponse.of(enterpriseService.getServiceOfferingDetails(enterpriseId, offerId));
+    }
+
 }

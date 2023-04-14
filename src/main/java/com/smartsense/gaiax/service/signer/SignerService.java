@@ -9,6 +9,8 @@ import com.smartsense.gaiax.client.CreateDidRequest;
 import com.smartsense.gaiax.client.CreateParticipantRequest;
 import com.smartsense.gaiax.client.SignerClient;
 import com.smartsense.gaiax.dao.entity.Enterprise;
+import com.smartsense.gaiax.dao.entity.EnterpriseCredential;
+import com.smartsense.gaiax.dao.repository.EnterpriseCredentialRepository;
 import com.smartsense.gaiax.dao.repository.EnterpriseRepository;
 import com.smartsense.gaiax.dto.RegistrationStatus;
 import com.smartsense.gaiax.dto.StringPool;
@@ -45,21 +47,25 @@ public class SignerService {
 
     private final ScheduleService scheduleService;
 
+    private final EnterpriseCredentialRepository enterpriseCredentialRepository;
+
     /**
      * Instantiates a new Signer service.
      *
-     * @param enterpriseRepository the enterprise repository
-     * @param signerClient         the signer client
-     * @param s3Utils              the s 3 utils
-     * @param objectMapper         the object mapper
-     * @param scheduleService      the schedule service
+     * @param enterpriseRepository           the enterprise repository
+     * @param signerClient                   the signer client
+     * @param s3Utils                        the s 3 utils
+     * @param objectMapper                   the object mapper
+     * @param scheduleService                the schedule service
+     * @param enterpriseCredentialRepository
      */
-    public SignerService(EnterpriseRepository enterpriseRepository, SignerClient signerClient, S3Utils s3Utils, ObjectMapper objectMapper, ScheduleService scheduleService) {
+    public SignerService(EnterpriseRepository enterpriseRepository, SignerClient signerClient, S3Utils s3Utils, ObjectMapper objectMapper, ScheduleService scheduleService, EnterpriseCredentialRepository enterpriseCredentialRepository) {
         this.enterpriseRepository = enterpriseRepository;
         this.signerClient = signerClient;
         this.s3Utils = s3Utils;
         this.objectMapper = objectMapper;
         this.scheduleService = scheduleService;
+        this.enterpriseCredentialRepository = enterpriseCredentialRepository;
     }
 
     /**
@@ -88,6 +94,14 @@ public class SignerService {
             String participantString = objectMapper.writeValueAsString(((Map<String, Object>) responseEntity.getBody().get("data")).get("verifiableCredential"));
             FileUtils.writeStringToFile(file, participantString, Charset.defaultCharset());
             s3Utils.uploadFile(enterpriseId + "/participant.json", file);
+            
+            EnterpriseCredential enterpriseCredential = EnterpriseCredential.builder()
+                    .credentials(participantString)
+                    .enterpriseId(enterpriseId)
+                    .label("participant")
+                    .build();
+
+            enterpriseCredentialRepository.save(enterpriseCredential);
             enterprise.setStatus(RegistrationStatus.PARTICIPANT_JSON_CREATED.getStatus());
             LOGGER.debug("participant json created for enterprise->{} , json ->{}", enterpriseId, participantString);
         } catch (Exception e) {
