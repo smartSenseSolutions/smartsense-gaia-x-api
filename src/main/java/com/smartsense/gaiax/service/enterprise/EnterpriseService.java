@@ -208,7 +208,7 @@ public class EnterpriseService {
             String did = "did:web:" + enterprise.getSubDomainName();
             HashMap<String, String> data = new HashMap<>();
             data.put("name", name);
-            data.put("fileName", file.getName());
+            data.put("fileName", name); //TODO need to discuss
             CreateVCRequest createVCRequest = CreateVCRequest.builder()
                     .data(data)
                     .templateId("ServiceOffering")
