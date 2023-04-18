@@ -75,7 +75,7 @@ public class S3Utils {
     public String getPreSignedUrl(String objectName) {
         Date expiration = new java.util.Date();
         long expTimeMillis = expiration.getTime();
-        expTimeMillis += 20000; // 10 seconds
+        expTimeMillis += 60000; // 10 seconds
         expiration.setTime(expTimeMillis);
         return s3Client.generatePresignedUrl(StringPool.S3_BUCKET_NAME, objectName, expiration).toString();
     }

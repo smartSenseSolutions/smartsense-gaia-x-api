@@ -348,4 +348,12 @@ public class GaiaXController {
         validateAccess(Set.of(StringPool.ENTERPRISE_ROLE), sessionDTO.getRole());
         return CommonResponse.of(enterpriseService.ServiceOfferDetails(offerId, vp));
     }
+
+    @Tag(name = "Enterprise")
+    @Operation(summary = "export private keys. it will return s3 pre-signed URLs")
+    @GetMapping(path = "enterprises/keys/export", produces = MediaType.APPLICATION_JSON_VALUE)
+    public CommonResponse<Map<String, String>> exportKeys(@Parameter(hidden = true) @RequestAttribute(value = StringPool.SESSION_DTO) SessionDTO sessionDTO) throws JsonProcessingException {
+        validateAccess(Set.of(StringPool.ENTERPRISE_ROLE), sessionDTO.getRole());
+        return CommonResponse.of(enterpriseService.exportKeys(sessionDTO.getEnterpriseId()));
+    }
 }

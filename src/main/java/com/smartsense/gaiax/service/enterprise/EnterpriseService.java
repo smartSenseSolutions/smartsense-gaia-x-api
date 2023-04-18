@@ -304,4 +304,12 @@ public class EnterpriseService {
         Validate.isFalse(valid).launch(new BadDataException("Can not verify VP"));
         return serviceOffer.getMeta();
     }
+
+    public Map<String, String> exportKeys(long enterpriseId) {
+        Enterprise enterprise = enterpriseRepository.findById(enterpriseId).orElseThrow(EntityNotFoundException::new);
+        Map<String, String> keys = new HashMap<>();
+        keys.put("key", s3Utils.getPreSignedUrl(s3Utils.getPreSignedUrl(enterpriseId + "/" + enterprise.getSubDomainName() + ".key")));
+        keys.put("pkcs8Key", s3Utils.getPreSignedUrl(s3Utils.getPreSignedUrl(enterpriseId + "/pkcs8_" + enterprise.getSubDomainName() + ".key")));
+        return keys;
+    }
 }
