@@ -7,14 +7,8 @@ package com.smartsense.gaiax.service.enterprise;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.smartsense.gaiax.client.CreateVCRequest;
 import com.smartsense.gaiax.client.SignerClient;
-import com.smartsense.gaiax.dao.entity.Admin;
-import com.smartsense.gaiax.dao.entity.Enterprise;
-import com.smartsense.gaiax.dao.entity.EnterpriseCredential;
-import com.smartsense.gaiax.dao.entity.ServiceOffer;
-import com.smartsense.gaiax.dao.repository.AdminRepository;
-import com.smartsense.gaiax.dao.repository.EnterpriseCredentialRepository;
-import com.smartsense.gaiax.dao.repository.EnterpriseRepository;
-import com.smartsense.gaiax.dao.repository.ServiceOfferRepository;
+import com.smartsense.gaiax.dao.entity.*;
+import com.smartsense.gaiax.dao.repository.*;
 import com.smartsense.gaiax.dto.CreateServiceOfferingRequest;
 import com.smartsense.gaiax.dto.LoginResponse;
 import com.smartsense.gaiax.dto.SessionDTO;
@@ -64,6 +58,8 @@ public class EnterpriseService {
 
     private final JWTUtil jwtUtil;
 
+    private final ServiceOfferViewRepository serviceOfferViewRepository;
+
 
     /**
      * Instantiates a new Enterprise service.
@@ -76,8 +72,9 @@ public class EnterpriseService {
      * @param objectMapper                   the object mapper
      * @param adminRepository                the admin repository
      * @param jwtUtil                        the jwt util
+     * @param serviceOfferViewRepository
      */
-    public EnterpriseService(EnterpriseRepository enterpriseRepository, EnterpriseCredentialRepository enterpriseCredentialRepository, S3Utils s3Utils, ServiceOfferRepository serviceOfferRepository, SignerClient signerClient, ObjectMapper objectMapper, AdminRepository adminRepository, JWTUtil jwtUtil) {
+    public EnterpriseService(EnterpriseRepository enterpriseRepository, EnterpriseCredentialRepository enterpriseCredentialRepository, S3Utils s3Utils, ServiceOfferRepository serviceOfferRepository, SignerClient signerClient, ObjectMapper objectMapper, AdminRepository adminRepository, JWTUtil jwtUtil, ServiceOfferViewRepository serviceOfferViewRepository) {
         this.enterpriseRepository = enterpriseRepository;
         this.enterpriseCredentialRepository = enterpriseCredentialRepository;
         this.s3Utils = s3Utils;
@@ -86,6 +83,7 @@ public class EnterpriseService {
         this.objectMapper = objectMapper;
         this.adminRepository = adminRepository;
         this.jwtUtil = jwtUtil;
+        this.serviceOfferViewRepository = serviceOfferViewRepository;
     }
 
     /**
@@ -119,7 +117,7 @@ public class EnterpriseService {
             boolean valid = BCrypt.checkpw(password, enterprise.getPassword());
             Validate.isFalse(valid).launch(new BadDataException("invalid.username.or.password"));
             SessionDTO sessionDTO = SessionDTO.builder()
-                    .role(StringPool.ADMIN_ROLE)
+                    .role(StringPool.ENTERPRISE_ROLE)
                     .email(enterprise.getEmail())
                     .enterpriseId(enterprise.getId())
                     .build();
@@ -255,8 +253,8 @@ public class EnterpriseService {
      *
      * @return the list
      */
-    public List<ServiceOffer> serviceOfferList() {
-        return serviceOfferRepository.findAll();
+    public List<ServiceOfferView> serviceOfferList() {
+        return serviceOfferViewRepository.findAll();
     }
 
     /**

@@ -7,6 +7,7 @@ package com.smartsense.gaiax.controller;
 import com.smartsense.gaiax.dao.entity.Enterprise;
 import com.smartsense.gaiax.dao.entity.EnterpriseCredential;
 import com.smartsense.gaiax.dao.entity.ServiceOffer;
+import com.smartsense.gaiax.dao.entity.ServiceOfferView;
 import com.smartsense.gaiax.dto.*;
 import com.smartsense.gaiax.exception.SecurityException;
 import com.smartsense.gaiax.request.RegisterRequest;
@@ -311,7 +312,7 @@ public class GaiaXController {
     @Tag(name = "Catalogue")
     @Operation(summary = "List all service offering: Pagination, search and sort wil be added, role = enterprise")
     @GetMapping(path = "catalogue", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse<List<ServiceOffer>> getAllServiceOffers(@Parameter(hidden = true) @RequestAttribute(value = StringPool.SESSION_DTO) SessionDTO sessionDTO) {
+    public CommonResponse<List<ServiceOfferView>> getAllServiceOffers(@Parameter(hidden = true) @RequestAttribute(value = StringPool.SESSION_DTO) SessionDTO sessionDTO) {
         validateAccess(Set.of(StringPool.ENTERPRISE_ROLE), sessionDTO.getRole());
         return CommonResponse.of(enterpriseService.serviceOfferList());
     }
