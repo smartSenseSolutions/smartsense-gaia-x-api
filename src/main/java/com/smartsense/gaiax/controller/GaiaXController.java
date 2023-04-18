@@ -4,6 +4,7 @@
 
 package com.smartsense.gaiax.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.smartsense.gaiax.dao.entity.Enterprise;
 import com.smartsense.gaiax.dao.entity.EnterpriseCredential;
 import com.smartsense.gaiax.dao.entity.ServiceOffer;
@@ -11,6 +12,7 @@ import com.smartsense.gaiax.dao.entity.ServiceOfferView;
 import com.smartsense.gaiax.dto.*;
 import com.smartsense.gaiax.exception.SecurityException;
 import com.smartsense.gaiax.request.RegisterRequest;
+import com.smartsense.gaiax.service.credential.CredentialService;
 import com.smartsense.gaiax.service.domain.DomainService;
 import com.smartsense.gaiax.service.enterprise.EnterpriseService;
 import com.smartsense.gaiax.service.enterprise.RegistrationService;
@@ -29,6 +31,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -56,6 +59,8 @@ public class GaiaXController {
 
     private final SignerService signerService;
 
+    private final CredentialService credentialService;
+
 
     /**
      * Instantiates a new Gaia x controller.
@@ -66,14 +71,16 @@ public class GaiaXController {
      * @param k8SService          the k 8 s service
      * @param enterpriseService   the enterprise service
      * @param signerService       the signer service
+     * @param credentialService
      */
-    public GaiaXController(RegistrationService registrationService, DomainService domainService, CertificateService certificateService, K8SService k8SService, EnterpriseService enterpriseService, SignerService signerService) {
+    public GaiaXController(RegistrationService registrationService, DomainService domainService, CertificateService certificateService, K8SService k8SService, EnterpriseService enterpriseService, SignerService signerService, CredentialService credentialService) {
         this.registrationService = registrationService;
         this.domainService = domainService;
         this.certificateService = certificateService;
         this.k8SService = k8SService;
         this.enterpriseService = enterpriseService;
         this.signerService = signerService;
+        this.credentialService = credentialService;
     }
 
     private void validateAccess(Set<Integer> requiredRoles, int userRole) {
@@ -315,5 +322,30 @@ public class GaiaXController {
     public CommonResponse<List<ServiceOfferView>> getAllServiceOffers(@Parameter(hidden = true) @RequestAttribute(value = StringPool.SESSION_DTO) SessionDTO sessionDTO) {
         validateAccess(Set.of(StringPool.ENTERPRISE_ROLE), sessionDTO.getRole());
         return CommonResponse.of(enterpriseService.serviceOfferList());
+    }
+
+
+    /**
+     * Create VP
+     *
+     * @param sessionDTO the session dto
+     * @return the all service offers
+     */
+    @Tag(name = "Credentials")
+    @Operation(summary = "Create/Get VP of Gaia-x participant of any credential, role = enterprise")
+    @GetMapping(path = "enterprises/vc/{name}/vp", produces = MediaType.APPLICATION_JSON_VALUE)
+    public CommonResponse<Map<String, Object>> createVP(@Parameter(hidden = true) @RequestAttribute(value = StringPool.SESSION_DTO) SessionDTO sessionDTO, @PathVariable(name = "name") String name) throws JsonProcessingException {
+        validateAccess(Set.of(StringPool.ENTERPRISE_ROLE), sessionDTO.getRole());
+        return CommonResponse.of(credentialService.createVP(sessionDTO.getEnterpriseId(), name));
+    }
+
+    @Tag(name = "Catalogue")
+    @Operation(summary = "Get Service offer details. This API will consume participant VP and if VP is valid then it will return service  offering details, role = enterprise")
+    @PostMapping(path = "enterprises/service-offers/{offerId}/details", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public CommonResponse<Map<String, Object>> serviceOfferDetails(@Parameter(hidden = true) @RequestAttribute(value = StringPool.SESSION_DTO) SessionDTO sessionDTO,
+                                                                   @PathVariable(name = "offerId") long offerId,
+                                                                   @RequestBody Map<String, Object> vp) throws JsonProcessingException {
+        validateAccess(Set.of(StringPool.ENTERPRISE_ROLE), sessionDTO.getRole());
+        return CommonResponse.of(enterpriseService.ServiceOfferDetails(offerId, vp));
     }
 }

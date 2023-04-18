@@ -4,6 +4,7 @@
 
 package com.smartsense.gaiax.dao.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -47,6 +48,7 @@ public class ServiceOffer extends SuperEntity {
 
     private String expirationDate;
 
+    @JsonIgnore
     @Convert(converter = StringToMapConvertor.class)
     private Map<String, Object> meta;
 }

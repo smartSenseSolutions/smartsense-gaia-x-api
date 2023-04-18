@@ -5,6 +5,8 @@
 package com.smartsense.gaiax.client;
 
 
+import com.smartsense.gaiax.dto.CreateVPRequest;
+import com.smartsense.gaiax.dto.VerifyRequest;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -37,5 +39,11 @@ public interface SignerClient {
     @PostMapping(path = "onBoardToGaiaX", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Map<String, Object>> createVc(@RequestBody CreateVCRequest request);
 
+
+    @PostMapping(path = "createVP", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<Map<String, Object>> createVP(@RequestBody CreateVPRequest request);
+
+    @PostMapping(path = "verify", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<Map<String, Object>> verify(@RequestBody VerifyRequest request);
 
 }

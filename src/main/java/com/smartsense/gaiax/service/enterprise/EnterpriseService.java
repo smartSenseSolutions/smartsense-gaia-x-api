@@ -9,10 +9,7 @@ import com.smartsense.gaiax.client.CreateVCRequest;
 import com.smartsense.gaiax.client.SignerClient;
 import com.smartsense.gaiax.dao.entity.*;
 import com.smartsense.gaiax.dao.repository.*;
-import com.smartsense.gaiax.dto.CreateServiceOfferingRequest;
-import com.smartsense.gaiax.dto.LoginResponse;
-import com.smartsense.gaiax.dto.SessionDTO;
-import com.smartsense.gaiax.dto.StringPool;
+import com.smartsense.gaiax.dto.*;
 import com.smartsense.gaiax.exception.BadDataException;
 import com.smartsense.gaiax.exception.EntityNotFoundException;
 import com.smartsense.gaiax.utils.CommonUtils;
@@ -33,6 +30,7 @@ import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * The type Enterprise service.
@@ -292,5 +290,18 @@ public class EnterpriseService {
     public List<EnterpriseCredential> getEnterpriseCredentials(long enterpriseId) {
         enterpriseRepository.findById(enterpriseId).orElseThrow(EntityNotFoundException::new);
         return enterpriseCredentialRepository.getByEnterpriseId(enterpriseId);
+    }
+
+    public Map<String, Object> ServiceOfferDetails(long offerId, Map<String, Object> vp) {
+        ServiceOffer serviceOffer = serviceOfferRepository.findById(offerId).orElseThrow(EntityNotFoundException::new);
+        //verify if VP is
+        VerifyRequest verifyRequest = VerifyRequest.builder()
+                .policies(Set.of("checkSignature"))
+                .credential(vp)
+                .build();
+        ResponseEntity<Map<String, Object>> verify = signerClient.verify(verifyRequest);
+        boolean valid = Boolean.valueOf(((Map<String, Object>) verify.getBody().get("data")).get("checkSignature").toString());
+        Validate.isFalse(valid).launch(new BadDataException("Can not verify VP"));
+        return serviceOffer.getMeta();
     }
 }
