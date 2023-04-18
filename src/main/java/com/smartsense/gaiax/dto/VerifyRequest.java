@@ -11,6 +11,9 @@ import lombok.Setter;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * The type Verify request.
+ */
 @Getter
 @Setter
 @Builder

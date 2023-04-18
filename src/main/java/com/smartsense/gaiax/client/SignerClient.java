@@ -40,9 +40,21 @@ public interface SignerClient {
     ResponseEntity<Map<String, Object>> createVc(@RequestBody CreateVCRequest request);
 
 
+    /**
+     * Create vp response entity.
+     *
+     * @param request the request
+     * @return the response entity
+     */
     @PostMapping(path = "createVP", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Map<String, Object>> createVP(@RequestBody CreateVPRequest request);
 
+    /**
+     * Verify response entity.
+     *
+     * @param request the request
+     * @return the response entity
+     */
     @PostMapping(path = "verify", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Map<String, Object>> verify(@RequestBody VerifyRequest request);
 

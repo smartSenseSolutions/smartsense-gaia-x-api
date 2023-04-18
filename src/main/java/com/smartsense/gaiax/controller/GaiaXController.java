@@ -71,7 +71,7 @@ public class GaiaXController {
      * @param k8SService          the k 8 s service
      * @param enterpriseService   the enterprise service
      * @param signerService       the signer service
-     * @param credentialService
+     * @param credentialService   the credential service
      */
     public GaiaXController(RegistrationService registrationService, DomainService domainService, CertificateService certificateService, K8SService k8SService, EnterpriseService enterpriseService, SignerService signerService, CredentialService credentialService) {
         this.registrationService = registrationService;
@@ -329,7 +329,9 @@ public class GaiaXController {
      * Create VP
      *
      * @param sessionDTO the session dto
+     * @param name       the name
      * @return the all service offers
+     * @throws JsonProcessingException the json processing exception
      */
     @Tag(name = "Credentials")
     @Operation(summary = "Create/Get VP of Gaia-x participant of any credential, role = enterprise")
@@ -339,6 +341,15 @@ public class GaiaXController {
         return CommonResponse.of(credentialService.createVP(sessionDTO.getEnterpriseId(), name));
     }
 
+    /**
+     * Service offer details common response.
+     *
+     * @param sessionDTO the session dto
+     * @param offerId    the offer id
+     * @param vp         the vp
+     * @return the common response
+     * @throws JsonProcessingException the json processing exception
+     */
     @Tag(name = "Catalogue")
     @Operation(summary = "Get Service offer details. This API will consume participant VP and if VP is valid then it will return service  offering details, role = enterprise")
     @PostMapping(path = "enterprises/service-offers/{offerId}/details", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -346,9 +357,16 @@ public class GaiaXController {
                                                                    @PathVariable(name = "offerId") long offerId,
                                                                    @RequestBody Map<String, Object> vp) throws JsonProcessingException {
         validateAccess(Set.of(StringPool.ENTERPRISE_ROLE), sessionDTO.getRole());
-        return CommonResponse.of(enterpriseService.ServiceOfferDetails(offerId, vp));
+        return CommonResponse.of(enterpriseService.serviceOfferDetails(offerId, vp));
     }
 
+    /**
+     * Export keys common response.
+     *
+     * @param sessionDTO the session dto
+     * @return the common response
+     * @throws JsonProcessingException the json processing exception
+     */
     @Tag(name = "Enterprise")
     @Operation(summary = "export private keys. it will return s3 pre-signed URLs")
     @GetMapping(path = "enterprises/keys/export", produces = MediaType.APPLICATION_JSON_VALUE)

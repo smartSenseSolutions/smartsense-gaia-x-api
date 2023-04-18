@@ -21,5 +21,12 @@ public interface EnterpriseCredentialRepository extends JpaRepository<Enterprise
      */
     List<EnterpriseCredential> getByEnterpriseId(long enterpriseId);
 
+    /**
+     * Gets by enterprise id and label.
+     *
+     * @param enterpriseId the enterprise id
+     * @param participant  the participant
+     * @return the by enterprise id and label
+     */
     EnterpriseCredential getByEnterpriseIdAndLabel(long enterpriseId, String participant);
 }

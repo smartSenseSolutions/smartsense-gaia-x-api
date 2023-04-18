@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Set;
 
 /**
@@ -48,13 +49,13 @@ public class StringToSetConvertor implements AttributeConverter<Set<String>, Str
     @Override
     public Set<String> convertToEntityAttribute(String dbData) {
         if (StringUtils.isEmpty(dbData)) {
-            return null;
+            return Collections.emptySet();
         }
         try {
             return objectMapper.readValue(dbData, Set.class);
         } catch (IOException ex) {
             LOGGER.error("Unexpected IOEx decoding json from database: {}", dbData, ex);
-            return null;
+            return Collections.emptySet();
         }
     }
 

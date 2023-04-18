@@ -39,6 +39,7 @@ import java.util.Set;
 public class EnterpriseService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EnterpriseService.class);
+    public static final String INVALID_USERNAME_OR_PASSWORD = "invalid.username.or.password";
 
     private final EnterpriseRepository enterpriseRepository;
 
@@ -70,7 +71,7 @@ public class EnterpriseService {
      * @param objectMapper                   the object mapper
      * @param adminRepository                the admin repository
      * @param jwtUtil                        the jwt util
-     * @param serviceOfferViewRepository
+     * @param serviceOfferViewRepository     the service offer view repository
      */
     public EnterpriseService(EnterpriseRepository enterpriseRepository, EnterpriseCredentialRepository enterpriseCredentialRepository, S3Utils s3Utils, ServiceOfferRepository serviceOfferRepository, SignerClient signerClient, ObjectMapper objectMapper, AdminRepository adminRepository, JWTUtil jwtUtil, ServiceOfferViewRepository serviceOfferViewRepository) {
         this.enterpriseRepository = enterpriseRepository;
@@ -96,9 +97,9 @@ public class EnterpriseService {
         if (type == 1) {
             //login as admin
             Admin admin = adminRepository.getByUserName(email);
-            Validate.isNull(admin).launch(new BadDataException("invalid.username.or.password"));
+            Validate.isNull(admin).launch(new BadDataException(INVALID_USERNAME_OR_PASSWORD));
             boolean valid = BCrypt.checkpw(password, admin.getPassword());
-            Validate.isFalse(valid).launch(new BadDataException("invalid.username.or.password"));
+            Validate.isFalse(valid).launch(new BadDataException(INVALID_USERNAME_OR_PASSWORD));
             SessionDTO sessionDTO = SessionDTO.builder()
                     .role(StringPool.ADMIN_ROLE)
                     .email(admin.getUserName())
@@ -111,9 +112,9 @@ public class EnterpriseService {
         } else {
             //login aa enterprise
             Enterprise enterprise = enterpriseRepository.getByEmail(email);
-            Validate.isNull(enterprise).launch(new BadDataException("invalid.username.or.password"));
+            Validate.isNull(enterprise).launch(new BadDataException(INVALID_USERNAME_OR_PASSWORD));
             boolean valid = BCrypt.checkpw(password, enterprise.getPassword());
-            Validate.isFalse(valid).launch(new BadDataException("invalid.username.or.password"));
+            Validate.isFalse(valid).launch(new BadDataException(INVALID_USERNAME_OR_PASSWORD));
             SessionDTO sessionDTO = SessionDTO.builder()
                     .role(StringPool.ENTERPRISE_ROLE)
                     .email(enterprise.getEmail())
@@ -223,7 +224,7 @@ public class EnterpriseService {
             enterpriseCredential = enterpriseCredentialRepository.save(enterpriseCredential);
 
             //Save file in S3
-            FileUtils.writeStringToFile(file, serviceOfferingString);
+            FileUtils.writeStringToFile(file, serviceOfferingString, Charset.defaultCharset());
             s3Utils.uploadFile(enterpriseId + "/" + name + ".json", file);
 
             //Store service offer
@@ -292,7 +293,14 @@ public class EnterpriseService {
         return enterpriseCredentialRepository.getByEnterpriseId(enterpriseId);
     }
 
-    public Map<String, Object> ServiceOfferDetails(long offerId, Map<String, Object> vp) {
+    /**
+     * Service offer details map.
+     *
+     * @param offerId the offer id
+     * @param vp      the vp
+     * @return the map
+     */
+    public Map<String, Object> serviceOfferDetails(long offerId, Map<String, Object> vp) {
         ServiceOffer serviceOffer = serviceOfferRepository.findById(offerId).orElseThrow(EntityNotFoundException::new);
         //verify if VP is
         VerifyRequest verifyRequest = VerifyRequest.builder()
@@ -300,11 +308,17 @@ public class EnterpriseService {
                 .credential(vp)
                 .build();
         ResponseEntity<Map<String, Object>> verify = signerClient.verify(verifyRequest);
-        boolean valid = Boolean.valueOf(((Map<String, Object>) verify.getBody().get("data")).get("checkSignature").toString());
+        boolean valid = Boolean.parseBoolean(((Map<String, Object>) verify.getBody().get("data")).get("checkSignature").toString());
         Validate.isFalse(valid).launch(new BadDataException("Can not verify VP"));
         return serviceOffer.getMeta();
     }
 
+    /**
+     * Export keys map.
+     *
+     * @param enterpriseId the enterprise id
+     * @return the map
+     */
     public Map<String, String> exportKeys(long enterpriseId) {
         Enterprise enterprise = enterpriseRepository.findById(enterpriseId).orElseThrow(EntityNotFoundException::new);
         Map<String, String> keys = new HashMap<>();

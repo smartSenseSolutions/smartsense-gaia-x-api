@@ -46,10 +46,10 @@ public class CredentialService {
      * Instantiates a new Credential service.
      *
      * @param enterpriseRepository           the enterprise repository
-     * @param enterpriseCredentialRepository
-     * @param objectMapper
-     * @param signerClient
-     * @param s3Utils
+     * @param enterpriseCredentialRepository the enterprise credential repository
+     * @param objectMapper                   the object mapper
+     * @param signerClient                   the signer client
+     * @param s3Utils                        the s 3 utils
      */
     public CredentialService(EnterpriseRepository enterpriseRepository, EnterpriseCredentialRepository enterpriseCredentialRepository, ObjectMapper objectMapper, SignerClient signerClient, S3Utils s3Utils) {
         this.enterpriseRepository = enterpriseRepository;
@@ -71,6 +71,14 @@ public class CredentialService {
         }
     }
 
+    /**
+     * Create vp map.
+     *
+     * @param enterpriseId the enterprise id
+     * @param name         the name
+     * @return the map
+     * @throws JsonProcessingException the json processing exception
+     */
     public Map<String, Object> createVP(long enterpriseId, String name) throws JsonProcessingException {
         Enterprise enterprise = enterpriseRepository.findById(enterpriseId).orElseThrow(BadDataException::new);
         EnterpriseCredential enterpriseCredential = enterpriseCredentialRepository.getByEnterpriseIdAndLabel(enterpriseId, name);

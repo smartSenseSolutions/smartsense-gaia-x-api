@@ -13,6 +13,9 @@ import lombok.Setter;
 import org.hibernate.annotations.Immutable;
 import org.hibernate.annotations.Subselect;
 
+/**
+ * The type Service offer view.
+ */
 @Entity
 @Subselect(value = "select so.id , so.credential_id , so.subject_did , so .\"name\" , so.produced_by , so.copyright_owned_by , so.description , so.license , so.expiration_date , e.legal_name as enterprise_name, e.sub_domain_name  from service_offer so inner join enterprise e  on e.id = so.enterprise_id")
 @Immutable
@@ -46,6 +49,11 @@ public class ServiceOfferView {
     @Transient
     private String offerLink;
 
+    /**
+     * Gets offer link.
+     *
+     * @return the offer link
+     */
     public String getOfferLink() {
         return "https://" + this.subDomainName + "/.well-known/" + name + ".json";
     }

@@ -11,6 +11,9 @@ import lombok.Setter;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * The type Create vp request.
+ */
 @Getter
 @Setter
 @Builder
