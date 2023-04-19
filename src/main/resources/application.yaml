@@ -52,7 +52,7 @@ spring:
           param_null_passing: true
         c3p0:
           timeout: 1800
-        dialect: org.hibernate.dialect.MariaDBDialect
+        dialect: org.hibernate.dialect.PostgreSQLDialect
         jdbc:
           batch_size: 100
           batch_versioned_data: true
