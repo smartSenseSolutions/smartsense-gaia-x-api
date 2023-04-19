@@ -265,8 +265,8 @@ public class EnterpriseService {
      *
      * @return the list
      */
-    public List<ServiceOfferView> serviceOfferList() {
-        return serviceOfferViewRepository.findAll();
+    public List<ServiceOfferView> allServiceOfferList(long enterpriseId) {
+        return serviceOfferViewRepository.getAllServiceOffers(enterpriseId);
     }
 
     /**
@@ -275,8 +275,8 @@ public class EnterpriseService {
      * @param enterpriseId the enterprise id
      * @return the list
      */
-    public List<ServiceOffer> serviceOfferList(long enterpriseId) {
-        return serviceOfferRepository.getByEnterpriseId(enterpriseId);
+    public List<ServiceOfferView> serviceOfferList(long enterpriseId) {
+        return serviceOfferViewRepository.getByEnterpriseId(enterpriseId);
     }
 
     /**

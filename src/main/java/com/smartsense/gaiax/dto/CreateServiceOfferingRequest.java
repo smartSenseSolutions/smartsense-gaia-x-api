@@ -30,5 +30,6 @@ public class CreateServiceOfferingRequest {
 
     private String terms;
 
+
     private Map<String, Object> meta;
 }
