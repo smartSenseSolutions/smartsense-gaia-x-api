@@ -39,6 +39,9 @@ import java.util.Set;
 public class EnterpriseService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EnterpriseService.class);
+    /**
+     * The constant INVALID_USERNAME_OR_PASSWORD.
+     */
     public static final String INVALID_USERNAME_OR_PASSWORD = "invalid.username.or.password";
 
     private final EnterpriseRepository enterpriseRepository;
@@ -264,22 +267,6 @@ public class EnterpriseService {
      */
     public List<ServiceOffer> serviceOfferList(long enterpriseId) {
         return serviceOfferRepository.getByEnterpriseId(enterpriseId);
-    }
-
-
-    /**
-     * Gets service offering details.
-     *
-     * @param enterpriseId the enterprise id
-     * @param offerId      the offer id
-     * @return the service offering details
-     */
-    public ServiceOffer getServiceOfferingDetails(long enterpriseId, long offerId) {
-        ServiceOffer serviceOffer = serviceOfferRepository.getByIdAndEnterpriseId(offerId, enterpriseId);
-        Validate.isNull(serviceOffer).launch(new EntityNotFoundException());
-        //TODO need VC?
-
-        return serviceOffer;
     }
 
     /**

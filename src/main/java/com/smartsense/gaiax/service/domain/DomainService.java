@@ -198,7 +198,7 @@ public class DomainService {
 
                     @Override
                     public void refresh() {
-
+                        //Do nothing
                     }
                 })
                 .withRegion(Regions.US_EAST_1)

@@ -17,8 +17,6 @@ import com.smartsense.gaiax.exception.EntityNotFoundException;
 import com.smartsense.gaiax.utils.S3Utils;
 import com.smartsense.gaiax.utils.Validate;
 import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -30,8 +28,6 @@ import java.util.Map;
  */
 @Service
 public class CredentialService {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(CredentialService.class);
 
     private final EnterpriseRepository enterpriseRepository;
 
@@ -57,18 +53,6 @@ public class CredentialService {
         this.objectMapper = objectMapper;
         this.signerClient = signerClient;
         this.s3Utils = s3Utils;
-    }
-
-    /**
-     * Create did json.
-     *
-     * @param enterpriseId the enterprise id
-     */
-    public void createDidJson(long enterpriseId) {
-        Enterprise enterprise = enterpriseRepository.findById(enterpriseId).orElse(null);
-        if (enterprise == null) {
-            LOGGER.error("Invalid enterprise id ->{} , not creating did json", enterpriseId);
-        }
     }
 
     /**

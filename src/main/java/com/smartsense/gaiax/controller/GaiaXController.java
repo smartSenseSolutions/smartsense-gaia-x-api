@@ -11,7 +11,6 @@ import com.smartsense.gaiax.dao.entity.ServiceOffer;
 import com.smartsense.gaiax.dao.entity.ServiceOfferView;
 import com.smartsense.gaiax.dto.*;
 import com.smartsense.gaiax.exception.SecurityException;
-import com.smartsense.gaiax.request.RegisterRequest;
 import com.smartsense.gaiax.service.credential.CredentialService;
 import com.smartsense.gaiax.service.domain.DomainService;
 import com.smartsense.gaiax.service.enterprise.EnterpriseService;

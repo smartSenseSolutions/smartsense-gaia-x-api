@@ -26,19 +26,21 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation('org.springframework.boot:spring-boot-starter-validation')
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation("org.springframework.boot:spring-boot-starter-quartz")
     implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.0.2'
+    implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign', version: '4.0.2'
     implementation 'org.liquibase:liquibase-core'
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     runtimeOnly 'org.postgresql:postgresql'
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+    //AWS SDK
     implementation group: 'com.amazonaws', name: 'aws-java-sdk-route53', version: '1.12.440'
-    implementation group: 'com.github.jsonld-java', name: 'jsonld-java', version: '0.13.4'
-    implementation group: 'io.vertx', name: 'vertx-web-client', version: '4.4.1'
-    implementation group: 'io.vertx', name: 'vertx-config', version: '4.4.1'
-    implementation group: 'io.vertx', name: 'vertx-config-yaml', version: '4.4.1'
-    implementation group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '9.31'
+    implementation group: 'com.amazonaws', name: 'aws-java-sdk-s3', version: '1.12.441'
+
+    //Password hash
     implementation group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.70'
     implementation group: 'org.bouncycastle', name: 'bcpkix-jdk15on', version: '1.70'
 
@@ -49,19 +51,12 @@ dependencies {
     //JSON LD
     implementation('decentralized-identity:jsonld-common-java:1.0.0')
 
-    implementation("org.springframework.boot:spring-boot-starter-quartz")
-
-    implementation group: 'com.amazonaws', name: 'aws-java-sdk-s3', version: '1.12.441'
-
+    //k8s
     implementation 'io.kubernetes:client-java:18.0.0'
 
-    implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign', version: '4.0.2'
-
     implementation group: 'org.json', name: 'json', version: '20230227'
-
     implementation('io.jsonwebtoken:jjwt:0.9.1')
-
-
+    
 }
 
 tasks.named('test') {

@@ -7,7 +7,10 @@ package com.smartsense.gaiax.utils;
 import com.smartsense.gaiax.config.JWTSetting;
 import com.smartsense.gaiax.dto.SessionDTO;
 import com.smartsense.gaiax.dto.StringPool;
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -50,42 +53,6 @@ public class JWTUtil {
     }
 
     /**
-     * Get username/email from the given token
-     *
-     * @param token access token
-     * @return username /email
-     */
-    public String getUsernameFromToken(String token) {
-        return getAllClaimsFromToken(token).getSubject();
-    }
-
-    /**
-     * Get expiration date from the token
-     *
-     * @param token access token
-     * @return expiry date
-     */
-    public Date getExpirationDateFromToken(String token) {
-        return getAllClaimsFromToken(token).getExpiration();
-    }
-
-    /**
-     * Checks if token is expired.
-     *
-     * @param token access token
-     * @return true if token is expired
-     */
-    private boolean isTokenExpired(String token) {
-        Date expiration;
-        try {
-            expiration = getExpirationDateFromToken(token);
-            return expiration != null && expiration.before(new Date());
-        } catch (ExpiredJwtException | MalformedJwtException ex) {
-            return true;
-        }
-    }
-
-    /**
      * Generate token string.
      *
      * @param sessionDTO the session dto
@@ -120,16 +87,6 @@ public class JWTUtil {
     }
 
     /**
-     * Validates token if it is not expired
-     *
-     * @param token access token
-     * @return true if valid token
-     */
-    public boolean validateToken(String token) {
-        return !isTokenExpired(token);
-    }
-
-    /**
      * Extracts token from the authorization header
      *
      * @param authorizationHeader authorization header
@@ -140,21 +97,5 @@ public class JWTUtil {
             throw new MalformedJwtException("JWT cannot be empty");
         }
         return authorizationHeader.substring(BEARER.length());
-    }
-
-    /**
-     * Retrieves given claims from the given access token
-     *
-     * @param token     access token
-     * @param claimKeys claim keys for the claims retrieved from the access token
-     * @return Map of claims
-     */
-    public Map<String, Object> getClaim(String token, String... claimKeys) {
-        Claims claims = getAllClaimsFromToken(token);
-        Map<String, Object> foundClaims = new HashMap<>();
-        for (String key : claimKeys) {
-            foundClaims.put(key, claims.get(key));
-        }
-        return foundClaims;
     }
 }

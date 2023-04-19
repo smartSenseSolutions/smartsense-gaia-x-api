@@ -170,7 +170,7 @@ public class K8SService {
             enterprise.setStatus(RegistrationStatus.INGRESS_CREATED.getStatus());
 
             LOGGER.debug("Ingress created for enterprise -> {} and domain ->{}", enterpriseId, enterprise.getSubDomainName());
-            createDidcreationJob(enterpriseId, enterprise);
+            createDidCreationJob(enterpriseId, enterprise);
         } catch (Exception e) {
             LOGGER.error("Can not create ingress for enterprise -> {}", enterpriseId, e);
             enterprise.setStatus(RegistrationStatus.INGRESS_CREATION_FAILED.getStatus());
@@ -180,7 +180,7 @@ public class K8SService {
         }
     }
 
-    private void createDidcreationJob(long enterpriseId, Enterprise enterprise) {
+    private void createDidCreationJob(long enterpriseId, Enterprise enterprise) {
         try {
             scheduleService.createJob(enterpriseId, StringPool.JOB_TYPE_CREATE_DID, 0);
         } catch (SchedulerException e) {

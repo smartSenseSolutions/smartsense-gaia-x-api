@@ -50,7 +50,7 @@ public class S3Utils {
 
                     @Override
                     public void refresh() {
-
+                        //Do nothing
                     }
                 }).build();
     }

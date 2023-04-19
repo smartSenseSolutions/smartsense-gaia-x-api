@@ -73,10 +73,6 @@ public class CertificateService {
 
     private enum ChallengeType {
         /**
-         * Http challenge type.
-         */
-        HTTP,
-        /**
          * Dns challenge type.
          */
         DNS
@@ -162,6 +158,7 @@ public class CertificateService {
                 for (X509Certificate cert : fileCertificates) {
                     AcmeUtils.writeToPem(cert.getEncoded(), AcmeUtils.PemLabel.CERTIFICATE, fw);
                 }
+                //TODO this flow can be improved
                 //write root certificate
                 fw.append("""
                         -----BEGIN CERTIFICATE-----

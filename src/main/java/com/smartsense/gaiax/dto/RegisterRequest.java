@@ -2,7 +2,7 @@
  * Copyright (c) 2023 | smartSense
  */
 
-package com.smartsense.gaiax.request;
+package com.smartsense.gaiax.dto;
 
 import jakarta.validation.constraints.*;
 import lombok.Getter;

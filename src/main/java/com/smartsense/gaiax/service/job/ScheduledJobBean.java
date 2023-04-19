@@ -54,18 +54,18 @@ public class ScheduledJobBean extends QuartzJobBean {
         JobDetail jobDetail = context.getJobDetail();
         String jobType = jobDetail.getJobDataMap().getString(StringPool.JOB_TYPE);
 
-        if (jobType.equals(StringPool.JOB_TYPE_CREATE_SUB_DOMAIN)) {
-            domainService.createSubDomain(jobDetail.getJobDataMap().getLong(StringPool.ENTERPRISE_ID));
-        } else if (jobType.equals(StringPool.JOB_TYPE_CREATE_CERTIFICATE)) {
-            certificateService.createSSLCertificate(jobDetail.getJobDataMap().getLong(StringPool.ENTERPRISE_ID), jobDetail.getKey());
-        } else if (jobType.equals(StringPool.JOB_TYPE_CREATE_INGRESS)) {
-            k8SService.createIngress(jobDetail.getJobDataMap().getLong(StringPool.ENTERPRISE_ID));
-        } else if (jobType.equals(StringPool.JOB_TYPE_CREATE_DID)) {
-            signerService.createDid(jobDetail.getJobDataMap().getLong(StringPool.ENTERPRISE_ID));
-        } else if (jobType.equals(StringPool.JOB_TYPE_CREATE_PARTICIPANT)) {
-            signerService.createParticipantJson(jobDetail.getJobDataMap().getLong(StringPool.ENTERPRISE_ID));
-        } else {
-            LOGGER.error("Invalid job type -> {}", jobType);
+        switch (jobType) {
+            case StringPool.JOB_TYPE_CREATE_SUB_DOMAIN ->
+                    domainService.createSubDomain(jobDetail.getJobDataMap().getLong(StringPool.ENTERPRISE_ID));
+            case StringPool.JOB_TYPE_CREATE_CERTIFICATE ->
+                    certificateService.createSSLCertificate(jobDetail.getJobDataMap().getLong(StringPool.ENTERPRISE_ID), jobDetail.getKey());
+            case StringPool.JOB_TYPE_CREATE_INGRESS ->
+                    k8SService.createIngress(jobDetail.getJobDataMap().getLong(StringPool.ENTERPRISE_ID));
+            case StringPool.JOB_TYPE_CREATE_DID ->
+                    signerService.createDid(jobDetail.getJobDataMap().getLong(StringPool.ENTERPRISE_ID));
+            case StringPool.JOB_TYPE_CREATE_PARTICIPANT ->
+                    signerService.createParticipantJson(jobDetail.getJobDataMap().getLong(StringPool.ENTERPRISE_ID));
+            default -> LOGGER.error("Invalid job type -> {}", jobType);
         }
         LOGGER.info("job completed");
     }

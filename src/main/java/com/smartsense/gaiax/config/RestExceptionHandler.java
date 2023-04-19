@@ -157,7 +157,7 @@ public class RestExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler({MethodArgumentNotValidException.class})
     public ResponseEntity<CommonResponse<Map<String, Object>>> handleValidation(MethodArgumentNotValidException exception) {
-        List<FieldError> fieldErrors = exception.getBindingResult().getAllErrors().stream().map(error -> (FieldError) error).toList();
+        List<FieldError> fieldErrors = exception.getBindingResult().getAllErrors().stream().map(FieldError.class::cast).toList();
         return handleValidationError(fieldErrors);
 
     }
@@ -186,7 +186,7 @@ public class RestExceptionHandler {
     @ExceptionHandler({BindException.class})
     public ResponseEntity<CommonResponse<Map<String, Object>>> handleValidation(BindException exception) {
         log.error(HANDLE_ENTITY_EXCEPTION_ERROR, exception.getMessage());
-        List<FieldError> fieldErrors = exception.getBindingResult().getAllErrors().stream().map(error -> (FieldError) error).toList();
+        List<FieldError> fieldErrors = exception.getBindingResult().getAllErrors().stream().map(FieldError.class::cast).toList();
         return handleValidationError(fieldErrors);
 
     }
