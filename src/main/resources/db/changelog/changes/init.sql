@@ -87,3 +87,12 @@ CREATE TABLE public.admin (
 	password varchar(1000) NOT NULL,
 	CONSTRAINT admin_pkey PRIMARY KEY (id)
 );
+
+--changeset Nitin:5
+ALTER TABLE public.service_offer DROP COLUMN license;
+ALTER TABLE public.service_offer DROP COLUMN expiration_date;
+ALTER TABLE public.service_offer ADD access_type varchar(255) NULL;
+ALTER TABLE public.service_offer ADD request_type varchar(255) NULL;
+ALTER TABLE public.service_offer ADD format_type varchar(255) NULL;
+ALTER TABLE public.service_offer ADD terms varchar(255) NULL;
+ALTER TABLE public.service_offer ADD terms_hash varchar(255) NULL;

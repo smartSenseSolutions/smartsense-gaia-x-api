@@ -8,7 +8,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.Map;
-import java.util.Set;
 
 /**
  * The type Create service offering request.
@@ -21,11 +20,15 @@ public class CreateServiceOfferingRequest {
 
     private String description;
 
-    private String license;
+    private String policy;
 
-    private Set<String> policies;
+    private String accessType;
 
-    private String expirationDate;
+    private String requestType;
+
+    private String formatType;
+
+    private String terms;
 
     private Map<String, Object> meta;
 }

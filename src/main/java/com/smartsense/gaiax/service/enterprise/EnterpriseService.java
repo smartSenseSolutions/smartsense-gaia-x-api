@@ -209,6 +209,13 @@ public class EnterpriseService {
             HashMap<String, String> data = new HashMap<>();
             data.put("name", name);
             data.put("fileName", file.getName());
+            data.put("description", request.getDescription());
+            data.put("policyUrl", request.getPolicy());
+            data.put("termsAndConditionsUrl", request.getTerms());
+            data.put("termsAndConditionsHash", "70c1d713215f95191a11d38fe2341faed27d19e083917bc8732ca4fea4976700");
+            data.put("requestType", request.getRequestType());
+            data.put("accessType", request.getAccessType());
+            data.put("formatType", request.getFormatType());
             CreateVCRequest createVCRequest = CreateVCRequest.builder()
                     .data(data)
                     .templateId("ServiceOffering")
@@ -234,15 +241,18 @@ public class EnterpriseService {
             serviceOffer = ServiceOffer.builder()
                     .enterpriseId(enterpriseId)
                     .meta(request.getMeta())
-                    .license(request.getLicense())
                     .copyrightOwnedBy(did)
                     .name(name)
                     .credentialId(enterpriseCredential.getId())
                     .description(request.getDescription())
-                    .policy(request.getPolicies())
-                    .expirationDate(request.getExpirationDate())
+                    .policy(request.getPolicy())
                     .producedBy(did)
                     .subjectDid(did)
+                    .accessType(request.getAccessType())
+                    .requestType(request.getRequestType())
+                    .formatType(request.getFormatType())
+                    .terms(request.getTerms())
+                    .termsHash("70c1d713215f95191a11d38fe2341faed27d19e083917bc8732ca4fea4976700") //TODO this is hard coded
                     .build();
             return serviceOfferRepository.save(serviceOffer);
         } finally {

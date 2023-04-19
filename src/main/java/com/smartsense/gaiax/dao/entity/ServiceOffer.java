@@ -9,7 +9,6 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.Map;
-import java.util.Set;
 
 /**
  * The type Service offer.
@@ -41,12 +40,17 @@ public class ServiceOffer extends SuperEntity {
 
     private String description;
 
-    private String license;
+    private String policy;
 
-    @Convert(converter = StringToSetConvertor.class)
-    private Set<String> policy;
+    private String accessType;
 
-    private String expirationDate;
+    private String requestType;
+
+    private String formatType;
+
+    private String terms;
+
+    private String termsHash;
 
     @JsonIgnore
     @Convert(converter = StringToMapConvertor.class)
