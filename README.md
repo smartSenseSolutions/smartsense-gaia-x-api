@@ -39,3 +39,28 @@ This MVP cover below usercase:
 
 1. Authentication and Authorization flow can be improved
 2. Data exchange based on Gaia-x trust framework(Ocean protocol??)
+3. Unit Test
+4. K8S ingress and secret creation can be done using argoCD/argo workflow
+5. For login, we can use Openid4VP with integration of keycloak
+
+## Run application
+
+### Configuration
+
+1. Create k8s user with access of ingress and secret creation
+2. Create AWS s3 bucket
+3. Create hosted zone in AWS with your base domain
+4. Create AWS IAM user with access of hosted zone and S3
+
+### Run in IntelliJ Idea
+
+1. Set values in application.yaml
+2. Run using intellij idea
+
+### Run in k8s
+
+Please refer sample config files in ``/k8s`` folder
+
+## References
+
+1. [Create SSL certificate using acme4j](https://github.com/shred/acme4j/blob/master/acme4j-example/src/main/java/org/shredzone/acme4j/example/ClientTest.java)
