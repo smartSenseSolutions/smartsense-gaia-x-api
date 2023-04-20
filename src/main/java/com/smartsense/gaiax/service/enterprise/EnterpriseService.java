@@ -109,7 +109,7 @@ public class EnterpriseService {
                     .enterpriseId(-1)
                     .build();
             return LoginResponse.builder()
-                    .token(jwtUtil.generateToken(sessionDTO))
+                    .token("Bearer " + jwtUtil.generateToken(sessionDTO))
                     .session(sessionDTO)
                     .build();
         } else {
