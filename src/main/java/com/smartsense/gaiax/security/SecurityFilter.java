@@ -12,6 +12,7 @@ import com.smartsense.gaiax.utils.Validate;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -64,26 +65,32 @@ public class SecurityFilter implements Filter {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         HttpServletRequest httpServletRequest = (HttpServletRequest) request;
-        String requestURI = httpServletRequest.getRequestURI();
-        LOGGER.debug("RequestLogger, uri={}, Method={}, remoteIp={}, userAgent={}", httpServletRequest.getRequestURI(), httpServletRequest.getMethod(), httpServletRequest.getRemoteAddr(), httpServletRequest.getHeader(HttpHeaders.USER_AGENT));
-        if (isPublicPath(requestURI)) {
+        HttpServletResponse httpServletResponse = (HttpServletResponse) response;
+        try {
+            String requestURI = httpServletRequest.getRequestURI();
+            LOGGER.debug("RequestLogger, uri={}, Method={}, remoteIp={}, userAgent={}", httpServletRequest.getRequestURI(), httpServletRequest.getMethod(), httpServletRequest.getRemoteAddr(), httpServletRequest.getHeader(HttpHeaders.USER_AGENT));
+            if (isPublicPath(requestURI)) {
+                chain.doFilter(request, response);
+                return;
+            }
+            String accessToken = httpServletRequest.getHeader(HttpHeaders.AUTHORIZATION);
+            Validate.isNull(accessToken).launch(new SecurityException("Can not find token"));
+
+            //get user info
+            Claims claims = jwtUtil.getAllClaimsFromToken(jwtUtil.extractToken(accessToken));
+            SessionDTO sessionDTO = SessionDTO.builder()
+                    .role(claims.get(StringPool.ROLE, Integer.class))
+                    .enterpriseId(claims.get(StringPool.ENTERPRISE_ID, Long.class))
+                    .email(claims.get(StringPool.EMAIL, String.class))
+                    .build();
+
+            httpServletRequest.setAttribute(StringPool.SESSION_DTO, sessionDTO);
+
             chain.doFilter(request, response);
-            return;
+        } catch (SecurityException e) {
+            LOGGER.debug("security exception ", e);
+            httpServletResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         }
-        String accessToken = httpServletRequest.getHeader(HttpHeaders.AUTHORIZATION);
-        Validate.isNull(accessToken).launch(new SecurityException("Can not find token"));
-
-        //get user info
-        Claims claims = jwtUtil.getAllClaimsFromToken(jwtUtil.extractToken(accessToken));
-        SessionDTO sessionDTO = SessionDTO.builder()
-                .role(claims.get(StringPool.ROLE, Integer.class))
-                .enterpriseId(claims.get(StringPool.ENTERPRISE_ID, Long.class))
-                .email(claims.get(StringPool.EMAIL, String.class))
-                .build();
-
-        httpServletRequest.setAttribute(StringPool.SESSION_DTO, sessionDTO);
-
-        chain.doFilter(request, response);
     }
 
 
