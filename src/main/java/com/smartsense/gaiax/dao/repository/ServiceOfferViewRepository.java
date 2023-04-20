@@ -22,4 +22,5 @@ public interface ServiceOfferViewRepository extends JpaRepository<ServiceOfferVi
     @Query("from ServiceOfferView where enterpriseId <> :enterpriseId")
     List<ServiceOfferView> getAllServiceOffers(@Param("enterpriseId") long enterpriseId);
 
+    ServiceOfferView getByEnterpriseIdAndId(long enterpriseId, long id);
 }

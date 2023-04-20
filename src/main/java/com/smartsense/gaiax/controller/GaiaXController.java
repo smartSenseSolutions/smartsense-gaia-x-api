@@ -304,9 +304,24 @@ public class GaiaXController {
     @Tag(name = "Catalogue")
     @Operation(summary = "Get service offering of enterprise, role enterprise")
     @GetMapping(path = "enterprises/service-offers", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse<List<ServiceOfferView>> createServiceOffering(@Parameter(hidden = true) @RequestAttribute(value = StringPool.SESSION_DTO) SessionDTO sessionDTO) {
+    public CommonResponse<List<ServiceOfferView>> serviceOfferList(@Parameter(hidden = true) @RequestAttribute(value = StringPool.SESSION_DTO) SessionDTO sessionDTO) {
         validateAccess(Set.of(StringPool.ENTERPRISE_ROLE), sessionDTO.getRole());
         return CommonResponse.of(enterpriseService.serviceOfferList(sessionDTO.getEnterpriseId()));
+    }
+
+    /**
+     * Create service offering common response.
+     *
+     * @param sessionDTO the session dto
+     * @return the common response
+     */
+    @Tag(name = "Catalogue")
+    @Operation(summary = "Get service offering by id of enterprise, details with meta information, role enterprise")
+    @GetMapping(path = "enterprises/service-offers/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public CommonResponse<ServiceOfferView> getServiceOfferDetailsById(@Parameter(hidden = true) @RequestAttribute(value = StringPool.SESSION_DTO) SessionDTO sessionDTO,
+                                                                       @PathVariable(name = "id") long id) {
+        validateAccess(Set.of(StringPool.ENTERPRISE_ROLE), sessionDTO.getRole());
+        return CommonResponse.of(enterpriseService.getServiceOfferDetailsById(sessionDTO.getEnterpriseId(), id));
     }
 
     /**

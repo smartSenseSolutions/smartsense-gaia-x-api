@@ -13,6 +13,8 @@ import lombok.Setter;
 import org.hibernate.annotations.Immutable;
 import org.hibernate.annotations.Subselect;
 
+import java.util.Map;
+
 /**
  * The type Service offer view.
  */
@@ -56,6 +58,9 @@ public class ServiceOfferView {
 
     @Transient
     private String offerLink;
+
+    @Transient
+    private Map<String, Object> meta;
 
     /**
      * Gets offer link.

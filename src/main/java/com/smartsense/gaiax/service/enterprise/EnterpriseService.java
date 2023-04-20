@@ -323,4 +323,14 @@ public class EnterpriseService {
         keys.put("pkcs8Key", s3Utils.getPreSignedUrl(s3Utils.getPreSignedUrl(enterpriseId + "/pkcs8_" + enterprise.getSubDomainName() + ".key")));
         return keys;
     }
+
+    public ServiceOfferView getServiceOfferDetailsById(long enterpriseId, long id) {
+        ServiceOfferView serviceOfferView = serviceOfferViewRepository.getByEnterpriseIdAndId(enterpriseId, id);
+        Validate.isNull(serviceOfferView).launch(new BadDataException("invalid.service.offer.id"));
+        ServiceOffer serviceOffer = serviceOfferRepository.getByIdAndEnterpriseId(id, enterpriseId);
+        Validate.isNull(serviceOfferView).launch(new BadDataException("invalid.service.offer.id"));
+        Validate.isNull(serviceOffer).launch(new BadDataException());
+        serviceOfferView.setMeta(serviceOffer.getMeta());
+        return serviceOfferView;
+    }
 }
