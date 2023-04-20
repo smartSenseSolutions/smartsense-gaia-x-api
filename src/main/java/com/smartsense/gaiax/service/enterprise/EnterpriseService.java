@@ -243,6 +243,7 @@ public class EnterpriseService {
                     .meta(request.getMeta())
                     .copyrightOwnedBy(did)
                     .name(name)
+                    .label(request.getName())
                     .credentialId(enterpriseCredential.getId())
                     .description(request.getDescription())
                     .policy(request.getPolicy())

@@ -34,6 +34,8 @@ public class ServiceOffer extends SuperEntity {
 
     private String name;
 
+    private String label;
+
     private String producedBy;
 
     private String copyrightOwnedBy;

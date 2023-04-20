@@ -96,3 +96,6 @@ ALTER TABLE public.service_offer ADD request_type varchar(255) NULL;
 ALTER TABLE public.service_offer ADD format_type varchar(255) NULL;
 ALTER TABLE public.service_offer ADD terms varchar(255) NULL;
 ALTER TABLE public.service_offer ADD terms_hash varchar(255) NULL;
+
+--changeset Nitin:6
+ALTER TABLE public.service_offer ADD "label" varchar(255) NULL;
