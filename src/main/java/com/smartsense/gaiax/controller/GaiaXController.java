@@ -127,11 +127,11 @@ public class GaiaXController {
     @Operation(summary = "Register enterprise in the system. This will save enterprise data in database and create job to create subdomain, role: admin")
     @PostMapping(path = "register", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     @Tag(name = "Onboarding")
-    public Enterprise registerBusiness(@RequestBody @Valid RegisterRequest registerRequest,
-                                       @Parameter(hidden = true) @RequestAttribute(value = StringPool.SESSION_DTO) SessionDTO sessionDTO
+    public CommonResponse<Enterprise> registerBusiness(@RequestBody @Valid RegisterRequest registerRequest,
+                                                       @Parameter(hidden = true) @RequestAttribute(value = StringPool.SESSION_DTO) SessionDTO sessionDTO
     ) throws SchedulerException {
         validateAccess(Set.of(StringPool.ADMIN_ROLE), sessionDTO.getRole());
-        return registrationService.registerEnterprise(registerRequest);
+        return CommonResponse.of(registrationService.registerEnterprise(registerRequest));
     }
 
 
