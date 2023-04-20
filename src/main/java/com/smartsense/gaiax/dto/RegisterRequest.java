@@ -29,7 +29,7 @@ public class RegisterRequest {
     @Size(min = 3, max = 32)
     private String legalName;
 
-    @Size(min = 3, max = 5)
+    @Size(min = 3, max = 12)
     @Pattern(regexp = "^[A-Za-z0-9]+$")
     private String subDomainName;
 

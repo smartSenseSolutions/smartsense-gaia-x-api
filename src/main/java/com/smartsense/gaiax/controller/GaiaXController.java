@@ -29,6 +29,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -192,10 +193,12 @@ public class GaiaXController {
     @Tag(name = "Onboarding")
     @Operation(summary = "Resume onboarding process from sub domain creation, role Admin")
     @GetMapping(path = "subdomain/{enterpriseId}")
-    public String createSubDomain(@PathVariable(name = "enterpriseId") long enterpriseId, @Parameter(hidden = true) @RequestAttribute(value = StringPool.SESSION_DTO) SessionDTO sessionDTO) {
+    public CommonResponse<Map<String, String>> createSubDomain(@PathVariable(name = "enterpriseId") long enterpriseId, @Parameter(hidden = true) @RequestAttribute(value = StringPool.SESSION_DTO) SessionDTO sessionDTO) {
         validateAccess(Set.of(StringPool.ADMIN_ROLE), sessionDTO.getRole());
         domainService.createSubDomain(enterpriseId);
-        return CREATED;
+        Map<String, String> map = new HashMap<>();
+        map.put("message", "Subdomain creation started");
+        return CommonResponse.of(map);
     }
 
     /**
@@ -208,10 +211,12 @@ public class GaiaXController {
     @Tag(name = "Onboarding")
     @Operation(summary = "Resume onboarding process from SLL certificate creation, role = admin")
     @GetMapping(path = "certificate/{enterpriseId}")
-    public String createCertificate(@PathVariable(name = "enterpriseId") long enterpriseId, @Parameter(hidden = true) @RequestAttribute(value = StringPool.SESSION_DTO) SessionDTO sessionDTO) {
+    public CommonResponse<Map<String, String>> createCertificate(@PathVariable(name = "enterpriseId") long enterpriseId, @Parameter(hidden = true) @RequestAttribute(value = StringPool.SESSION_DTO) SessionDTO sessionDTO) {
         validateAccess(Set.of(StringPool.ADMIN_ROLE), sessionDTO.getRole());
         certificateService.createSSLCertificate(enterpriseId, null);
-        return CREATED;
+        Map<String, String> map = new HashMap<>();
+        map.put("message", "Certification creation started");
+        return CommonResponse.of(map);
     }
 
 
@@ -225,10 +230,12 @@ public class GaiaXController {
     @Tag(name = "Onboarding")
     @Operation(summary = "Resume onboarding process from ingress creation, role = admin")
     @GetMapping(path = "ingress/{enterpriseId}")
-    public String createIngress(@PathVariable(name = "enterpriseId") long enterpriseId, @Parameter(hidden = true) @RequestAttribute(value = StringPool.SESSION_DTO) SessionDTO sessionDTO) {
+    public CommonResponse<Map<String, String>> createIngress(@PathVariable(name = "enterpriseId") long enterpriseId, @Parameter(hidden = true) @RequestAttribute(value = StringPool.SESSION_DTO) SessionDTO sessionDTO) {
         validateAccess(Set.of(StringPool.ADMIN_ROLE), sessionDTO.getRole());
         k8SService.createIngress(enterpriseId);
-        return CREATED;
+        Map<String, String> map = new HashMap<>();
+        map.put("message", "Ingress creation started");
+        return CommonResponse.of(map);
     }
 
     /**
@@ -241,10 +248,12 @@ public class GaiaXController {
     @Tag(name = "Onboarding")
     @Operation(summary = "Resume onboarding process from did creation, role-=admin")
     @GetMapping(path = "did/{enterpriseId}")
-    public String createDid(@PathVariable(name = "enterpriseId") long enterpriseId, @Parameter(hidden = true) @RequestAttribute(value = StringPool.SESSION_DTO) SessionDTO sessionDTO) {
+    public CommonResponse<Map<String, String>> createDid(@PathVariable(name = "enterpriseId") long enterpriseId, @Parameter(hidden = true) @RequestAttribute(value = StringPool.SESSION_DTO) SessionDTO sessionDTO) {
         validateAccess(Set.of(StringPool.ADMIN_ROLE), sessionDTO.getRole());
         signerService.createDid(enterpriseId);
-        return CREATED;
+        Map<String, String> map = new HashMap<>();
+        map.put("message", "did creation started");
+        return CommonResponse.of(map);
     }
 
     /**
@@ -257,10 +266,12 @@ public class GaiaXController {
     @Tag(name = "Onboarding")
     @Operation(summary = "Resume onboarding process from participant credential creation, role Admin")
     @GetMapping(path = "participant/{enterpriseId}")
-    public String createParticipantJson(@PathVariable(name = "enterpriseId") long enterpriseId, @Parameter(hidden = true) @RequestAttribute(value = StringPool.SESSION_DTO) SessionDTO sessionDTO) {
+    public CommonResponse<Map<String, String>> createParticipantJson(@PathVariable(name = "enterpriseId") long enterpriseId, @Parameter(hidden = true) @RequestAttribute(value = StringPool.SESSION_DTO) SessionDTO sessionDTO) {
         validateAccess(Set.of(StringPool.ADMIN_ROLE), sessionDTO.getRole());
         signerService.createParticipantJson(enterpriseId);
-        return CREATED;
+        Map<String, String> map = new HashMap<>();
+        map.put("message", "participant json creation started");
+        return CommonResponse.of(map);
     }
 
     /**
