@@ -212,7 +212,7 @@ public class GaiaXController {
     @Tag(name = "Onboarding")
     @Operation(summary = "Resume onboarding process from SLL certificate creation, role = admin")
     @GetMapping(path = "certificate/{enterpriseId}")
-    public CommonResponse<CertificateService> createCertificate(@PathVariable(name = "enterpriseId") long enterpriseId, @Parameter(hidden = true) @RequestAttribute(value = StringPool.SESSION_DTO) SessionDTO sessionDTO) {
+    public CommonResponse<Enterprise> createCertificate(@PathVariable(name = "enterpriseId") long enterpriseId, @Parameter(hidden = true) @RequestAttribute(value = StringPool.SESSION_DTO) SessionDTO sessionDTO) {
         validateAccess(Set.of(StringPool.ADMIN_ROLE), sessionDTO.getRole());
         Enterprise enterprise1 = enterpriseService.getEnterprise(enterpriseId);
         if (enterprise1.getStatus() != RegistrationStatus.CERTIFICATE_CREATION_FAILED.getStatus()) {
@@ -220,7 +220,7 @@ public class GaiaXController {
         }
         Enterprise enterprise = enterpriseService.changeStatus(enterpriseId, RegistrationStatus.CERTIFICATE_CREATION_IN_PROCESS.getStatus());
         certificateService.createSSLCertificate(enterpriseId);
-        return CommonResponse.of(certificateService);
+        return CommonResponse.of(enterprise);
     }
 
 
