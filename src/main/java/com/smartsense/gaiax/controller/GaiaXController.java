@@ -10,6 +10,7 @@ import com.smartsense.gaiax.dao.entity.EnterpriseCredential;
 import com.smartsense.gaiax.dao.entity.ServiceOffer;
 import com.smartsense.gaiax.dao.entity.ServiceOfferView;
 import com.smartsense.gaiax.dto.*;
+import com.smartsense.gaiax.exception.BadDataException;
 import com.smartsense.gaiax.exception.SecurityException;
 import com.smartsense.gaiax.service.credential.CredentialService;
 import com.smartsense.gaiax.service.domain.DomainService;
@@ -211,12 +212,15 @@ public class GaiaXController {
     @Tag(name = "Onboarding")
     @Operation(summary = "Resume onboarding process from SLL certificate creation, role = admin")
     @GetMapping(path = "certificate/{enterpriseId}")
-    public CommonResponse<Map<String, String>> createCertificate(@PathVariable(name = "enterpriseId") long enterpriseId, @Parameter(hidden = true) @RequestAttribute(value = StringPool.SESSION_DTO) SessionDTO sessionDTO) {
+    public CommonResponse<CertificateService> createCertificate(@PathVariable(name = "enterpriseId") long enterpriseId, @Parameter(hidden = true) @RequestAttribute(value = StringPool.SESSION_DTO) SessionDTO sessionDTO) {
         validateAccess(Set.of(StringPool.ADMIN_ROLE), sessionDTO.getRole());
-        certificateService.createSSLCertificate(enterpriseId, null);
-        Map<String, String> map = new HashMap<>();
-        map.put("message", "Certification creation started");
-        return CommonResponse.of(map);
+        Enterprise enterprise1 = enterpriseService.getEnterprise(enterpriseId);
+        if (enterprise1.getStatus() != RegistrationStatus.CERTIFICATE_CREATION_FAILED.getStatus()) {
+            throw new BadDataException("Status is not certification creation failed");
+        }
+        Enterprise enterprise = enterpriseService.changeStatus(enterpriseId, RegistrationStatus.CERTIFICATE_CREATION_IN_PROCESS.getStatus());
+        certificateService.createSSLCertificate(enterpriseId);
+        return CommonResponse.of(certificateService);
     }
 
 

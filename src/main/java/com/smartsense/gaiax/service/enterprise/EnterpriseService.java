@@ -335,4 +335,11 @@ public class EnterpriseService {
         serviceOfferView.setMeta(serviceOffer.getMeta());
         return serviceOfferView;
     }
+
+    public Enterprise changeStatus(long enterpriseId, int status) {
+        Enterprise enterprise = enterpriseRepository.findById(enterpriseId).orElseThrow(EntityNotFoundException::new);
+        enterprise.setStatus(status);
+
+        return enterpriseRepository.save(enterprise);
+    }
 }

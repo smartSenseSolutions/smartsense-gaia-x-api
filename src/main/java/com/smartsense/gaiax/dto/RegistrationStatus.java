@@ -29,6 +29,8 @@ public enum RegistrationStatus {
      */
     CERTIFICATE_CREATED(4),
 
+    CERTIFICATE_CREATION_IN_PROCESS(12),
+
     /**
      * Certificate creation failed registration status.
      */

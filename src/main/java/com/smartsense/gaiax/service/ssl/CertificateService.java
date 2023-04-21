@@ -23,6 +23,7 @@ import org.shredzone.acme4j.util.CSRBuilder;
 import org.shredzone.acme4j.util.KeyPairUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
@@ -88,6 +89,12 @@ public class CertificateService {
 
     private final ScheduleService scheduleService;
 
+
+    @Async
+    public void createSSLCertificate(long enterpriseId) {
+        createSSLCertificate(enterpriseId, null);
+    }
+
     /**
      * Create ssl certificate.
      *
@@ -100,6 +107,7 @@ public class CertificateService {
             LOGGER.error("Invalid enterprise id");
             return;
         }
+        enterprise.setStatus(RegistrationStatus.PARTICIPANT_JSON_CREATED.getStatus());
         String domain = enterprise.getSubDomainName();
         File domainChainFile = new File("/tmp/" + domain + "_chain.crt");
         File csrFile = new File("/tmp/" + domain + ".csr");
