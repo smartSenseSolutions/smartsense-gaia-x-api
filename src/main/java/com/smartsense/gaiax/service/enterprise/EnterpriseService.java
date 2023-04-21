@@ -142,6 +142,7 @@ public class EnterpriseService {
         enterprise.setDidJson("https://" + enterprise.getSubDomainName() + "/.well-known/did.json");
         enterprise.setParticipantJson("https://" + enterprise.getSubDomainName() + "/.well-known/participant.json");
         enterprise.setCertificateChain("https://" + enterprise.getSubDomainName() + "/.well-known/x509CertificateChain.pem");
+        enterprise.setDid("did:web:" + enterprise.getSubDomainName());
         return enterprise;
     }
 

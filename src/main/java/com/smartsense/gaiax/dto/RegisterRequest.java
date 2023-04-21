@@ -20,6 +20,7 @@ public class RegisterRequest {
 
     @Email
     @NotBlank
+    @Size(min = 3, max = 255)
     private String email;
 
     @Size(min = 8, max = 16)
@@ -34,9 +35,11 @@ public class RegisterRequest {
     private String subDomainName;
 
     @NotBlank
+    @Size(min = 3, max = 255)
     private String legalRegistrationNumber;
 
     @NotBlank
+    @Size(min = 3, max = 255)
     private String legalRegistrationType;
 
     @NotBlank
