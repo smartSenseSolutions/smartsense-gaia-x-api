@@ -62,6 +62,8 @@ public class EnterpriseService {
 
     private final ServiceOfferViewRepository serviceOfferViewRepository;
 
+    private final ServiceAccessLogRepository serviceAccessLogRepository;
+
 
     /**
      * Instantiates a new Enterprise service.
@@ -75,8 +77,9 @@ public class EnterpriseService {
      * @param adminRepository                the admin repository
      * @param jwtUtil                        the jwt util
      * @param serviceOfferViewRepository     the service offer view repository
+     * @param serviceAccessLogRepository
      */
-    public EnterpriseService(EnterpriseRepository enterpriseRepository, EnterpriseCredentialRepository enterpriseCredentialRepository, S3Utils s3Utils, ServiceOfferRepository serviceOfferRepository, SignerClient signerClient, ObjectMapper objectMapper, AdminRepository adminRepository, JWTUtil jwtUtil, ServiceOfferViewRepository serviceOfferViewRepository) {
+    public EnterpriseService(EnterpriseRepository enterpriseRepository, EnterpriseCredentialRepository enterpriseCredentialRepository, S3Utils s3Utils, ServiceOfferRepository serviceOfferRepository, SignerClient signerClient, ObjectMapper objectMapper, AdminRepository adminRepository, JWTUtil jwtUtil, ServiceOfferViewRepository serviceOfferViewRepository, ServiceAccessLogRepository serviceAccessLogRepository) {
         this.enterpriseRepository = enterpriseRepository;
         this.enterpriseCredentialRepository = enterpriseCredentialRepository;
         this.s3Utils = s3Utils;
@@ -86,6 +89,7 @@ public class EnterpriseService {
         this.adminRepository = adminRepository;
         this.jwtUtil = jwtUtil;
         this.serviceOfferViewRepository = serviceOfferViewRepository;
+        this.serviceAccessLogRepository = serviceAccessLogRepository;
     }
 
     /**
@@ -299,7 +303,7 @@ public class EnterpriseService {
      * @param vp      the vp
      * @return the map
      */
-    public Map<String, Object> serviceOfferDetails(long offerId, Map<String, Object> vp) {
+    public Map<String, Object> serviceOfferDetails(long enterpriseId, long offerId, Map<String, Object> vp) {
         ServiceOffer serviceOffer = serviceOfferRepository.findById(offerId).orElseThrow(EntityNotFoundException::new);
         //verify if VP is
         VerifyRequest verifyRequest = VerifyRequest.builder()
@@ -309,6 +313,14 @@ public class EnterpriseService {
         ResponseEntity<Map<String, Object>> verify = signerClient.verify(verifyRequest);
         boolean valid = Boolean.parseBoolean(((Map<String, Object>) verify.getBody().get("data")).get("checkSignature").toString());
         Validate.isFalse(valid).launch(new BadDataException("Can not verify VP"));
+
+        //save access log
+        ServiceAccessLog serviceAccessLog = ServiceAccessLog.builder()
+                .provider(serviceOffer.getEnterpriseId())
+                .consumer(enterpriseId)
+                .serviceId(serviceOffer.getId())
+                .build();
+        serviceAccessLogRepository.save(serviceAccessLog);
         return serviceOffer.getMeta();
     }
 

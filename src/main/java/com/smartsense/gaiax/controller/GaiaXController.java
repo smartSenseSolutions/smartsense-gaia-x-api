@@ -384,9 +384,9 @@ public class GaiaXController {
     @PostMapping(path = "enterprises/service-offers/{offerId}/details", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public CommonResponse<Map<String, Object>> serviceOfferDetails(@Parameter(hidden = true) @RequestAttribute(value = StringPool.SESSION_DTO) SessionDTO sessionDTO,
                                                                    @PathVariable(name = "offerId") long offerId,
-                                                                   @RequestBody Map<String, Object> vp) throws JsonProcessingException {
+                                                                   @RequestBody Map<String, Object> vp) {
         validateAccess(Set.of(StringPool.ENTERPRISE_ROLE), sessionDTO.getRole());
-        return CommonResponse.of(enterpriseService.serviceOfferDetails(offerId, vp));
+        return CommonResponse.of(enterpriseService.serviceOfferDetails(sessionDTO.getEnterpriseId(), offerId, vp));
     }
 
     /**

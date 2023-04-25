@@ -99,3 +99,17 @@ ALTER TABLE public.service_offer ADD terms_hash varchar(255) NULL;
 
 --changeset Nitin:6
 ALTER TABLE public.service_offer ADD "label" varchar(255) NULL;
+
+--changeset Nitin:7
+CREATE TABLE public.service_access_log (
+	id bigserial NOT NULL,
+	created_at timestamp(6) NULL,
+	updated_at timestamp(6) NULL,
+	provider bigserial NOT NULL,
+	consumer bigserial NOT NULL,
+	service_id bigserial NOT NULL,
+	CONSTRAINT service_access_log_pkey PRIMARY KEY (id),
+	CONSTRAINT service_access_log_fk FOREIGN KEY (provider) REFERENCES public.enterprise(id),
+	CONSTRAINT service_access_log_fk_1 FOREIGN KEY (consumer) REFERENCES public.enterprise(id),
+	CONSTRAINT service_access_log_fk_2 FOREIGN KEY (service_id) REFERENCES public.service_offer(id)
+);

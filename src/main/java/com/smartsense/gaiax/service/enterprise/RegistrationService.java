@@ -71,13 +71,14 @@ public class RegistrationService {
         //check email
         Validate.isTrue(enterpriseRepository.existsByEmail(registerRequest.getEmail())).launch("duplicate.email");
 
-        //check sub domain
-        Validate.isTrue(enterpriseRepository.existsBySubDomainName(registerRequest.getSubDomainName())).launch("duplicate.sub.domain");
-
         //check registration number
         Validate.isTrue(enterpriseRepository.existsByLegalRegistrationNumber(registerRequest.getLegalRegistrationNumber())).launch("duplicate.registration.number");
 
-        String subdomain = registerRequest.getSubDomainName().toLowerCase() + "." + awsSettings.getBaseDomain();
+        String subdomain = (registerRequest.getSubDomainName().toLowerCase() + "." + awsSettings.getBaseDomain()).trim();
+
+        //check sub domain
+        Validate.isTrue(enterpriseRepository.existsBySubDomainName(subdomain)).launch("duplicate.sub.domain");
+
         //save enterprise details
         Enterprise enterprise = enterpriseRepository.save(Enterprise.builder()
                 .email(registerRequest.getEmail())
@@ -87,7 +88,7 @@ public class RegistrationService {
                 .legalRegistrationNumber(registerRequest.getLegalRegistrationNumber())
                 .legalRegistrationType(registerRequest.getLegalRegistrationType())
                 .status(RegistrationStatus.STARTED.getStatus())
-                .subDomainName(subdomain.trim())
+                .subDomainName(subdomain)
                 .password(BCrypt.hashpw(registerRequest.getPassword(), BCrypt.gensalt()))
                 .build());
 
