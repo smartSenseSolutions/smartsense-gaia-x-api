@@ -92,7 +92,7 @@ public class DomainService {
             int count = 0;
             LOGGER.debug("status  ->{} count - >{}", status, ++count);
 
-            while (!status.equalsIgnoreCase(ChangeStatus.INSYNC.name()) && count <= 6) {
+            while (!status.equalsIgnoreCase(ChangeStatus.INSYNC.name()) && count <= 12) {
                 try {
                     Thread.sleep(10000);
                 } catch (InterruptedException e) {
