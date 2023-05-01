@@ -95,13 +95,19 @@ public class SignerService {
             FileUtils.writeStringToFile(file, participantString, Charset.defaultCharset());
             s3Utils.uploadFile(enterpriseId + "/participant.json", file);
 
-            EnterpriseCredential enterpriseCredential = EnterpriseCredential.builder()
-                    .credentials(participantString)
-                    .enterpriseId(enterpriseId)
-                    .label("participant")
-                    .build();
+            EnterpriseCredential participant = enterpriseCredentialRepository.getByEnterpriseIdAndLabel(enterpriseId, "participant");
+            if (participant == null) {
+                participant = EnterpriseCredential.builder()
+                        .credentials(participantString)
+                        .enterpriseId(enterpriseId)
+                        .label("participant")
+                        .build();
+            } else {
+                participant.setCredentials(participantString);
+            }
 
-            enterpriseCredentialRepository.save(enterpriseCredential);
+
+            enterpriseCredentialRepository.save(participant);
             enterprise.setStatus(RegistrationStatus.PARTICIPANT_JSON_CREATED.getStatus());
             LOGGER.debug("participant json created for enterprise->{} , json ->{}", enterpriseId, participantString);
         } catch (Exception e) {
