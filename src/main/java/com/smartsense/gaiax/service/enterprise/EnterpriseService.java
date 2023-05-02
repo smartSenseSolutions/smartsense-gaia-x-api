@@ -17,6 +17,7 @@ import com.smartsense.gaiax.utils.JWTUtil;
 import com.smartsense.gaiax.utils.S3Utils;
 import com.smartsense.gaiax.utils.Validate;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Sort;
@@ -271,8 +272,13 @@ public class EnterpriseService {
      *
      * @return the list
      */
-    public List<ServiceOfferView> allServiceOfferList(long enterpriseId) {
-        return serviceOfferViewRepository.getAllServiceOffers(enterpriseId);
+    public List<ServiceOfferView> allServiceOfferList(long enterpriseId, String query) {
+        if (StringUtils.isBlank(query)) {
+            return serviceOfferViewRepository.getAllServiceOffers(enterpriseId);
+        } else {
+            return serviceOfferViewRepository.getAllServiceOffers(enterpriseId, query);
+        }
+
     }
 
     /**

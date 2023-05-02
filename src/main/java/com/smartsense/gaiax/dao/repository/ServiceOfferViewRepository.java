@@ -22,5 +22,10 @@ public interface ServiceOfferViewRepository extends JpaRepository<ServiceOfferVi
     @Query("from ServiceOfferView where enterpriseId <> :enterpriseId")
     List<ServiceOfferView> getAllServiceOffers(@Param("enterpriseId") long enterpriseId);
 
+
+    ///@Query("select u from User u where lower(u.name) like lower(concat('%', :nameToFind,'%'))")
+    @Query("from ServiceOfferView where enterpriseId <> :enterpriseId and (lower(label) like lower(concat('%', :query, '%')) or lower(description) like lower(concat('%', :query, '%')) or lower(enterpriseName) like lower(concat('%', :query, '%')))")
+    List<ServiceOfferView> getAllServiceOffers(@Param("enterpriseId") long enterpriseId, @Param("query") String query);
+
     ServiceOfferView getByEnterpriseIdAndId(long enterpriseId, long id);
 }

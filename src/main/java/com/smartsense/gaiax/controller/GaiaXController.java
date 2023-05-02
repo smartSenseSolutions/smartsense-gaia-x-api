@@ -348,9 +348,10 @@ public class GaiaXController {
     @Tag(name = "Catalogue")
     @Operation(summary = "List all service offering: Pagination, search and sort wil be added, role = enterprise")
     @GetMapping(path = "catalogue", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse<List<ServiceOfferView>> getAllServiceOffers(@Parameter(hidden = true) @RequestAttribute(value = StringPool.SESSION_DTO) SessionDTO sessionDTO) {
+    public CommonResponse<List<ServiceOfferView>> getAllServiceOffers(@Parameter(hidden = true) @RequestAttribute(value = StringPool.SESSION_DTO) SessionDTO sessionDTO
+            , @RequestParam(name = "query", required = false) String query) {
         validateAccess(Set.of(StringPool.ENTERPRISE_ROLE), sessionDTO.getRole());
-        return CommonResponse.of(enterpriseService.allServiceOfferList(sessionDTO.getEnterpriseId()));
+        return CommonResponse.of(enterpriseService.allServiceOfferList(sessionDTO.getEnterpriseId(), query));
     }
 
 
