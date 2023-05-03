@@ -144,8 +144,8 @@ public class RegistrationService {
 
         //email
         Map<String, String> emailMap = new HashMap<>();
-        nameMap.put("name", "email");
-        nameMap.put("value", registerRequest.getEmail());
+        emailMap.put("name", "email");
+        emailMap.put("value", registerRequest.getEmail());
         attributes.add(emailMap);
 
         OfferCredentialRequest offerCredentialRequest = OfferCredentialRequest.builder()
