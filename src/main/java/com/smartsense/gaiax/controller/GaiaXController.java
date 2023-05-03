@@ -192,7 +192,7 @@ public class GaiaXController {
      * @return the string
      */
     @Tag(name = "Onboarding")
-    @Operation(summary = "Resume onboarding process from sub domain creation, role Admin")
+    @Operation(summary = "Resume onboarding process from sub domain creation, role Admin, (only used for manual step in case of failure)")
     @GetMapping(path = "subdomain/{enterpriseId}")
     public CommonResponse<Map<String, String>> createSubDomain(@PathVariable(name = "enterpriseId") long enterpriseId, @Parameter(hidden = true) @RequestAttribute(value = StringPool.SESSION_DTO) SessionDTO sessionDTO) {
         validateAccess(Set.of(StringPool.ADMIN_ROLE), sessionDTO.getRole());
@@ -210,7 +210,7 @@ public class GaiaXController {
      * @return the string
      */
     @Tag(name = "Onboarding")
-    @Operation(summary = "Resume onboarding process from SLL certificate creation, role = admin")
+    @Operation(summary = "Resume onboarding process from SLL certificate creation, role = admin, (only used for manual step in case of failure)")
     @GetMapping(path = "certificate/{enterpriseId}")
     public CommonResponse<Enterprise> createCertificate(@PathVariable(name = "enterpriseId") long enterpriseId, @Parameter(hidden = true) @RequestAttribute(value = StringPool.SESSION_DTO) SessionDTO sessionDTO) {
         validateAccess(Set.of(StringPool.ADMIN_ROLE), sessionDTO.getRole());
@@ -232,7 +232,7 @@ public class GaiaXController {
      * @return the string
      */
     @Tag(name = "Onboarding")
-    @Operation(summary = "Resume onboarding process from ingress creation, role = admin")
+    @Operation(summary = "Resume onboarding process from ingress creation, role = admin, (only used for manual step in case of failure)")
     @GetMapping(path = "ingress/{enterpriseId}")
     public CommonResponse<Map<String, String>> createIngress(@PathVariable(name = "enterpriseId") long enterpriseId, @Parameter(hidden = true) @RequestAttribute(value = StringPool.SESSION_DTO) SessionDTO sessionDTO) {
         validateAccess(Set.of(StringPool.ADMIN_ROLE), sessionDTO.getRole());
@@ -250,7 +250,7 @@ public class GaiaXController {
      * @return the string
      */
     @Tag(name = "Onboarding")
-    @Operation(summary = "Resume onboarding process from did creation, role-=admin")
+    @Operation(summary = "Resume onboarding process from did creation, role-=admin, (only used for manual step in case of failure)")
     @GetMapping(path = "did/{enterpriseId}")
     public CommonResponse<Map<String, String>> createDid(@PathVariable(name = "enterpriseId") long enterpriseId, @Parameter(hidden = true) @RequestAttribute(value = StringPool.SESSION_DTO) SessionDTO sessionDTO) {
         validateAccess(Set.of(StringPool.ADMIN_ROLE), sessionDTO.getRole());
@@ -268,7 +268,7 @@ public class GaiaXController {
      * @return the string
      */
     @Tag(name = "Onboarding")
-    @Operation(summary = "Resume onboarding process from participant credential creation, role Admin")
+    @Operation(summary = "Resume onboarding process from participant credential creation, role Admin, (only used for manual step in case of failure)")
     @GetMapping(path = "participant/{enterpriseId}")
     public CommonResponse<Map<String, String>> createParticipantJson(@PathVariable(name = "enterpriseId") long enterpriseId, @Parameter(hidden = true) @RequestAttribute(value = StringPool.SESSION_DTO) SessionDTO sessionDTO) {
         validateAccess(Set.of(StringPool.ADMIN_ROLE), sessionDTO.getRole());
