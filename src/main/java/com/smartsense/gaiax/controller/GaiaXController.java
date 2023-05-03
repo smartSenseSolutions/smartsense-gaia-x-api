@@ -115,8 +115,7 @@ public class GaiaXController {
     @Tag(name = "Login")
     @Operation(summary = "Verify membership VP")
     @GetMapping(path = "verify/presentation", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse<LoginResponse> verifyPresentation(@Parameter(hidden = true) @RequestAttribute(value = StringPool.SESSION_DTO) SessionDTO sessionDTO, @RequestParam(name = "presentationId") String presentationId) throws JsonProcessingException {
-        validateAccess(Set.of(StringPool.ENTERPRISE_ROLE), sessionDTO.getRole());
+    public CommonResponse<LoginResponse> verifyPresentation(@RequestParam(name = "presentationId") String presentationId) throws JsonProcessingException {
         return CommonResponse.of(enterpriseService.verifyPresentation(presentationId));
     }
 
