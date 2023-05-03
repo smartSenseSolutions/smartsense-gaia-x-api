@@ -60,4 +60,7 @@ public interface EnterpriseRepository extends JpaRepository<Enterprise, Long> {
      * @return the by email
      */
     Enterprise getByEmail(String email);
+
+    Enterprise getByLegalName(String legalName);
+    
 }

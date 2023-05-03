@@ -47,7 +47,6 @@ public class GaiaXController {
     /**
      * The constant CREATED.
      */
-    public static final String CREATED = "Created";
     private final RegistrationService registrationService;
 
     private final DomainService domainService;
@@ -107,7 +106,6 @@ public class GaiaXController {
     /**
      * Verify presentation common response.
      *
-     * @param sessionDTO     the session dto
      * @param presentationId the presentation id
      * @return the common response
      * @throws JsonProcessingException the json processing exception
@@ -159,7 +157,6 @@ public class GaiaXController {
      *
      * @param sessionDTO the session dto
      * @return the common response
-     * @throws SchedulerException the scheduler exception
      */
     @Tag(name = "Enterprise")
     @Operation(summary = "get all enterprises, pagination, search and sort will be added, role: Admin")
@@ -393,20 +390,20 @@ public class GaiaXController {
     /**
      * Service offer details common response.
      *
-     * @param sessionDTO the session dto
-     * @param offerId    the offer id
-     * @param vp         the vp
+     * @param sessionDTO     the session dto
+     * @param offerId        the offer id
+     * @param presentationId the presentation id
      * @return the common response
      * @throws JsonProcessingException the json processing exception
      */
     @Tag(name = "Catalogue")
-    @Operation(summary = "Get Service offer details. This API will consume participant VP and if VP is valid then it will return service  offering details, role = enterprise")
-    @PostMapping(path = "enterprises/service-offers/{offerId}/details", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse<Map<String, Object>> serviceOfferDetails(@Parameter(hidden = true) @RequestAttribute(value = StringPool.SESSION_DTO) SessionDTO sessionDTO,
-                                                                   @PathVariable(name = "offerId") long offerId,
-                                                                   @RequestBody Map<String, Object> vp) {
+    @Operation(summary = "Get Service offer details. This API will consume credential presentation id of PCM and check with vereign API if credentials is shared , role = enterprise")
+    @GetMapping(path = "enterprises/service-offers/{offerId}/details", produces = MediaType.APPLICATION_JSON_VALUE)
+    public CommonResponse<ServiceOfferDetailsResponse> serviceOfferDetails(@Parameter(hidden = true) @RequestAttribute(value = StringPool.SESSION_DTO) SessionDTO sessionDTO,
+                                                                           @PathVariable(name = "offerId") long offerId,
+                                                                           @RequestParam(name = "presentationId") String presentationId) throws JsonProcessingException {
         validateAccess(Set.of(StringPool.ENTERPRISE_ROLE), sessionDTO.getRole());
-        return CommonResponse.of(enterpriseService.serviceOfferDetails(sessionDTO.getEnterpriseId(), offerId, vp));
+        return CommonResponse.of(enterpriseService.serviceOfferDetails(sessionDTO.getEnterpriseId(), offerId, presentationId));
     }
 
     /**

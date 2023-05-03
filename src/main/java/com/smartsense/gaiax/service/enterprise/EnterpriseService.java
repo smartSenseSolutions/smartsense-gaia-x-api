@@ -31,7 +31,6 @@ import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * The type Enterprise service.
@@ -328,27 +327,39 @@ public class EnterpriseService {
      * @param vp      the vp
      * @return the map
      */
-    public Map<String, Object> serviceOfferDetails(long enterpriseId, long offerId, Map<String, Object> vp) {
+    public ServiceOfferDetailsResponse serviceOfferDetails(long enterpriseId, long offerId, String presentationId) throws JsonProcessingException {
         ServiceOffer serviceOffer = serviceOfferRepository.findById(offerId).orElseThrow(EntityNotFoundException::new);
-        //verify if VP is
-        VerifyRequest verifyRequest = VerifyRequest.builder()
-                .policies(Set.of("checkSignature", "gxCompliance"))
-                .credential(vp)
-                .build();
-        ResponseEntity<Map<String, Object>> verify = signerClient.verify(verifyRequest);
-        boolean valid = Boolean.parseBoolean(((Map<String, Object>) verify.getBody().get("data")).get("checkSignature").toString());
-        boolean gxComplianceValid = Boolean.parseBoolean(((Map<String, Object>) verify.getBody().get("data")).get("gxCompliance").toString());
-        Validate.isFalse(valid).launch(new BadDataException("Can not verify signature of VP"));
-        Validate.isFalse(gxComplianceValid).launch(new BadDataException("Can not verify signature of Gaia-X"));
-
-        //save access log
-        ServiceAccessLog serviceAccessLog = ServiceAccessLog.builder()
-                .provider(serviceOffer.getEnterpriseId())
-                .consumer(enterpriseId)
-                .serviceId(serviceOffer.getId())
-                .build();
-        serviceAccessLogRepository.save(serviceAccessLog);
-        return serviceOffer.getMeta();
+        ResponseEntity<VerifyPresentationResponse> responseEntity = vereignClient.verifyPresentation(presentationId);
+        VerifyPresentationResponse body = responseEntity.getBody();
+        LOGGER.debug(" verifyPresentation response while accessing service offer {} -> {}", offerId, objectMapper.writeValueAsString(body));
+        PresentationData data = body.getData();
+        String state = data.getState();
+        if (state.equalsIgnoreCase("done") && data.getPresentations().size() > 0) {
+            Presentation presentation = data.getPresentations().get(0);
+            String legalName = presentation.getCredentialSubject().get("gx:legalName");
+            LOGGER.debug("legalName form verification result -{}", legalName);
+            Enterprise enterprise = enterpriseRepository.getByLegalName(legalName);
+            if (enterprise == null) {
+                throw new BadDataException("legal name is not registered");
+            }
+            //save access log
+            ServiceAccessLog serviceAccessLog = ServiceAccessLog.builder()
+                    .provider(serviceOffer.getEnterpriseId())
+                    .consumer(enterpriseId)
+                    .serviceId(serviceOffer.getId())
+                    .build();
+            serviceAccessLogRepository.save(serviceAccessLog);
+            return ServiceOfferDetailsResponse.builder()
+                    .statusCode(responseEntity.getStatusCode().value())
+                    .status(data.getState())
+                    .meta(serviceOffer.getMeta())
+                    .build();
+        } else {
+            return ServiceOfferDetailsResponse.builder()
+                    .statusCode(responseEntity.getStatusCode().value())
+                    .status(data.getState())
+                    .build();
+        }
     }
 
     /**
