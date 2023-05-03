@@ -46,7 +46,7 @@ public class SecurityFilter implements Filter {
         this.jwtUtil = jwtUtil;
         antPathMatcher = new AntPathMatcher();
 
-        //No authentication will be done
+        //No authentication will be done, can be handle in better way
         publicUrls = new TreeSet<>();
         publicUrls.add("/login");
         publicUrls.add("/.well-known/**");
@@ -59,6 +59,7 @@ public class SecurityFilter implements Filter {
         publicUrls.add("/swagger-resources/**");
         publicUrls.add("/v2/api-docs");
         publicUrls.add("/verify/presentation");
+        publicUrls.add("/tinyurl");
         Collections.unmodifiableCollection(publicUrls);
     }
 

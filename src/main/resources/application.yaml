@@ -94,5 +94,8 @@ vereign:
   host: ${VEREIGN_HOST:https://gaiax.vereign.com}
   credentialDefinitionId: ${CREDENTIAL_DEFINITION_ID}
   participantCredentialDefinitionId: ${PARTICIPANT_CREDENTIAL_DEFINITION_ID}
+tinyurl:
+  key: ${TINY_URL_KEY}
+  host: ${TINY_URL_HOST}
 jwt:
   tokenSigningKey: ${JWT_TOKEN_SIGNING_KEY}

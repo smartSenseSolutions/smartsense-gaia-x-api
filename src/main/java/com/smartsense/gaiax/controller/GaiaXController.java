@@ -12,6 +12,7 @@ import com.smartsense.gaiax.dao.entity.ServiceOfferView;
 import com.smartsense.gaiax.dto.*;
 import com.smartsense.gaiax.exception.BadDataException;
 import com.smartsense.gaiax.exception.SecurityException;
+import com.smartsense.gaiax.service.TinyUrlService;
 import com.smartsense.gaiax.service.credential.CredentialService;
 import com.smartsense.gaiax.service.domain.DomainService;
 import com.smartsense.gaiax.service.enterprise.EnterpriseService;
@@ -61,6 +62,8 @@ public class GaiaXController {
 
     private final CredentialService credentialService;
 
+    private final TinyUrlService tinyUrlService;
+
 
     /**
      * Instantiates a new Gaia x controller.
@@ -72,8 +75,9 @@ public class GaiaXController {
      * @param enterpriseService   the enterprise service
      * @param signerService       the signer service
      * @param credentialService   the credential service
+     * @param tinyUrlService
      */
-    public GaiaXController(RegistrationService registrationService, DomainService domainService, CertificateService certificateService, K8SService k8SService, EnterpriseService enterpriseService, SignerService signerService, CredentialService credentialService) {
+    public GaiaXController(RegistrationService registrationService, DomainService domainService, CertificateService certificateService, K8SService k8SService, EnterpriseService enterpriseService, SignerService signerService, CredentialService credentialService, TinyUrlService tinyUrlService) {
         this.registrationService = registrationService;
         this.domainService = domainService;
         this.certificateService = certificateService;
@@ -81,6 +85,7 @@ public class GaiaXController {
         this.enterpriseService = enterpriseService;
         this.signerService = signerService;
         this.credentialService = credentialService;
+        this.tinyUrlService = tinyUrlService;
     }
 
     private void validateAccess(Set<Integer> requiredRoles, int userRole) {
@@ -419,5 +424,12 @@ public class GaiaXController {
     public CommonResponse<Map<String, String>> exportKeys(@Parameter(hidden = true) @RequestAttribute(value = StringPool.SESSION_DTO) SessionDTO sessionDTO) throws JsonProcessingException {
         validateAccess(Set.of(StringPool.ENTERPRISE_ROLE), sessionDTO.getRole());
         return CommonResponse.of(enterpriseService.exportKeys(sessionDTO.getEnterpriseId()));
+    }
+
+    @Tag(name = "Utils")
+    @Operation(summary = "Create tiny URL")
+    @PostMapping(path = "tinyurl", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public CommonResponse<Map<String, String>> createTinyUrl(@RequestBody Map<String, String> map) {
+        return CommonResponse.of(tinyUrlService.createTinyUrl(map.get("url")));
     }
 }
