@@ -41,14 +41,14 @@ User <-- "API server": Offer created
 Service offering flow
 
 @startuml
+User -> PCM: Has an active PCM with relevant Credentials
 User -> "API server": Browse catalog
 User  <-- "API server": List of service offerings by other enterprise
-User -> "API server": Create verifiable presentation of participant credentials
-"API server" -> "Signer tool": Create VP
-"API server" <-- "Signer tool": Return VP
-"User"  <-- "API server": Return VP
-"User"  -> "API server": Present VP of Gaia-x participant and request for details(data) of service offering
-"API server"  -> "Signer tool": Verify VP
-"API server"  <-- "Signer tool": Verification results
+User -> "API server": Request details(data) of service offering
+"API server" -> "OCM": Send out of band presentation request
+PCM <-- OCM: Request Credental Attributes
+PCM -> OCM: Share the credential Info from User's PCM to OCM
+"API server" <-- OCM: Requested VP Attributes
+"API server" -> "API server": Verify the attributes and authorize
 "User" <-- "API server": Return details(data) of service offering
 @enduml
