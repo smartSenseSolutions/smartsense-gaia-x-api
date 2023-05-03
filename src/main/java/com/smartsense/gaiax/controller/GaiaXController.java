@@ -151,7 +151,7 @@ public class GaiaXController {
                                                        @Parameter(hidden = true) @RequestAttribute(value = StringPool.SESSION_DTO) SessionDTO sessionDTO
     ) throws SchedulerException, JsonProcessingException {
         validateAccess(Set.of(StringPool.ADMIN_ROLE), sessionDTO.getRole());
-        return CommonResponse.of(registrationService.registerEnterprise(registerRequest), "Enterprise registration completed and membership credentials issued please check PCM");
+        return CommonResponse.of(registrationService.registerEnterprise(registerRequest), "Enterprise registration process started and membership credentials issued in PCM");
     }
 
 
