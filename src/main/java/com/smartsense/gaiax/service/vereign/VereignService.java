@@ -25,6 +25,8 @@ import java.util.Map;
 @Service
 public class VereignService {
 
+    public static final String NAME = "name";
+    public static final String VALUE = "value";
     private final VereignClient vereignClient;
 
     private final VereignSettings vereignSettings;
@@ -50,26 +52,26 @@ public class VereignService {
         List<Map<String, String>> attributes = new ArrayList<>();
         //did
         Map<String, String> didMap = new HashMap<>();
-        didMap.put("name", "did");
-        didMap.put("value", did);
+        didMap.put(NAME, "did");
+        didMap.put(VALUE, did);
         attributes.add(didMap);
 
         //id
         Map<String, String> idMap = new HashMap<>();
-        idMap.put("name", "id");
-        idMap.put("value", url);
+        idMap.put(NAME, "id");
+        idMap.put(VALUE, url);
         attributes.add(idMap);
 
         //type
         Map<String, String> typeMap = new HashMap<>();
-        typeMap.put("name", "type");
-        typeMap.put("value", "gx:LegalParticipant"); //static
+        typeMap.put(NAME, "type");
+        typeMap.put(VALUE, "gx:LegalParticipant"); //static
         attributes.add(typeMap);
 
         //legalName
         Map<String, String> legalNameMap = new HashMap<>();
-        legalNameMap.put("name", "gx:legalName");
-        legalNameMap.put("value", legalName);
+        legalNameMap.put(NAME, "gx:legalName");
+        legalNameMap.put(VALUE, legalName);
         attributes.add(legalNameMap);
 
         return offerCredentials(connectionId, legalName, attributes, vereignSettings.getParticipantCredentialDefinitionId(), "gx:LegalParticipant issued on " + appName);
@@ -82,14 +84,14 @@ public class VereignService {
         List<Map<String, String>> attributes = new ArrayList<>();
         //name
         Map<String, String> nameMap = new HashMap<>();
-        nameMap.put("name", "name");
-        nameMap.put("value", registerRequest.getLegalName());
+        nameMap.put(NAME, NAME);
+        nameMap.put(VALUE, registerRequest.getLegalName());
         attributes.add(nameMap);
 
         //email
         Map<String, String> emailMap = new HashMap<>();
-        emailMap.put("name", "email");
-        emailMap.put("value", registerRequest.getEmail());
+        emailMap.put(NAME, "email");
+        emailMap.put(VALUE, registerRequest.getEmail());
         attributes.add(emailMap);
 
         return offerCredentials(registerRequest.getConnectionId(), registerRequest.getLegalName(), attributes, vereignSettings.getCredentialDefinitionId(), "Login with " + appName);
