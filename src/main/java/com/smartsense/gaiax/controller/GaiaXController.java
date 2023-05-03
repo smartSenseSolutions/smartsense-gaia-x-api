@@ -131,9 +131,9 @@ public class GaiaXController {
     @Tag(name = "Onboarding")
     public CommonResponse<Enterprise> registerBusiness(@RequestBody @Valid RegisterRequest registerRequest,
                                                        @Parameter(hidden = true) @RequestAttribute(value = StringPool.SESSION_DTO) SessionDTO sessionDTO
-    ) throws SchedulerException {
+    ) throws SchedulerException, JsonProcessingException {
         validateAccess(Set.of(StringPool.ADMIN_ROLE), sessionDTO.getRole());
-        return CommonResponse.of(registrationService.registerEnterprise(registerRequest));
+        return CommonResponse.of(registrationService.registerEnterprise(registerRequest), "Enterprise registration completed and membership credentials issued please check PCM");
     }
 
 

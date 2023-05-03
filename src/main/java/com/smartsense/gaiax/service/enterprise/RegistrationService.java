@@ -4,6 +4,8 @@
 
 package com.smartsense.gaiax.service.enterprise;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.smartsense.gaiax.client.OfferCredentialRequest;
 import com.smartsense.gaiax.client.OfferCredentialResponse;
 import com.smartsense.gaiax.client.VereignClient;
@@ -53,6 +55,8 @@ public class RegistrationService {
 
     private final ScheduleService scheduleService;
 
+    private final ObjectMapper objectMapper;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(RegistrationService.class);
 
     /**
@@ -63,14 +67,16 @@ public class RegistrationService {
      * @param vereignClient
      * @param vereignSettings
      * @param scheduleService
+     * @param objectMapper
      */
-    public RegistrationService(EnterpriseRepository enterpriseRepository, @Value("${spring.application.name}") String appName, AWSSettings awsSettings, VereignClient vereignClient, VereignSettings vereignSettings, ScheduleService scheduleService) {
+    public RegistrationService(EnterpriseRepository enterpriseRepository, @Value("${spring.application.name}") String appName, AWSSettings awsSettings, VereignClient vereignClient, VereignSettings vereignSettings, ScheduleService scheduleService, ObjectMapper objectMapper) {
         this.enterpriseRepository = enterpriseRepository;
         this.awsSettings = awsSettings;
         this.appName = appName;
         this.vereignClient = vereignClient;
         this.vereignSettings = vereignSettings;
         this.scheduleService = scheduleService;
+        this.objectMapper = objectMapper;
     }
 
     /**
@@ -90,7 +96,7 @@ public class RegistrationService {
      * @throws SchedulerException the scheduler exception
      */
     @Transactional(isolation = Isolation.SERIALIZABLE, propagation = Propagation.REQUIRES_NEW)
-    public Enterprise registerEnterprise(RegisterRequest registerRequest) throws SchedulerException {
+    public Enterprise registerEnterprise(RegisterRequest registerRequest) throws SchedulerException, JsonProcessingException {
         //check legal name
         Validate.isTrue(enterpriseRepository.existsByLegalName(registerRequest.getLegalName())).launch("duplicate.legal.name");
 
@@ -105,6 +111,29 @@ public class RegistrationService {
         //check sub domain
         Validate.isTrue(enterpriseRepository.existsBySubDomainName(subdomain)).launch("duplicate.sub.domain");
 
+        String offerId = offerCredentials(registerRequest);
+
+        //save enterprise details
+        Enterprise enterprise = enterpriseRepository.save(Enterprise.builder()
+                .email(registerRequest.getEmail())
+                .headquarterAddress(registerRequest.getHeadquarterAddress())
+                .legalAddress(registerRequest.getLegalAddress())
+                .legalName(registerRequest.getLegalName())
+                .legalRegistrationNumber(registerRequest.getLegalRegistrationNumber())
+                .legalRegistrationType(registerRequest.getLegalRegistrationType())
+                .status(RegistrationStatus.STARTED.getStatus())
+                .subDomainName(subdomain)
+                .connectionId(registerRequest.getConnectionId())
+                .offerId(offerId)
+                .build());
+
+
+        //create job to create subdomain
+        scheduleService.createJob(enterprise.getId(), StringPool.JOB_TYPE_CREATE_SUB_DOMAIN, 0);
+        return enterprise;
+    }
+
+    private String offerCredentials(RegisterRequest registerRequest) throws JsonProcessingException {
         //offer credentials
         List<Map<String, String>> attributes = new ArrayList<>();
         //name
@@ -126,27 +155,10 @@ public class RegistrationService {
                 .autoAcceptCredential("never") ////static for POC
                 .attributes(attributes)
                 .build();
+        LOGGER.debug("Request for offer credentials {}", objectMapper.writeValueAsString(offerCredentialRequest));
         ResponseEntity<OfferCredentialResponse> mapResponseEntity = vereignClient.offerCredential(offerCredentialRequest); //TODO do we need to save it?
         String offerId = mapResponseEntity.getBody().getData().get("id").toString();
         LOGGER.debug("Offer created for enterprise -> {}, id ->{}", registerRequest.getLegalName(), offerId);
-
-        //save enterprise details
-        Enterprise enterprise = enterpriseRepository.save(Enterprise.builder()
-                .email(registerRequest.getEmail())
-                .headquarterAddress(registerRequest.getHeadquarterAddress())
-                .legalAddress(registerRequest.getLegalAddress())
-                .legalName(registerRequest.getLegalName())
-                .legalRegistrationNumber(registerRequest.getLegalRegistrationNumber())
-                .legalRegistrationType(registerRequest.getLegalRegistrationType())
-                .status(RegistrationStatus.STARTED.getStatus())
-                .subDomainName(subdomain)
-                .connectionId(registerRequest.getConnectionId())
-                .offerId(offerId)
-                .build());
-
-
-        //create job to create subdomain
-        scheduleService.createJob(enterprise.getId(), StringPool.JOB_TYPE_CREATE_SUB_DOMAIN, 0);
-        return enterprise;
+        return offerId;
     }
 }

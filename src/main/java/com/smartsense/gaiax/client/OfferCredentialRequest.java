@@ -23,7 +23,7 @@ public class OfferCredentialRequest {
 
     private String comment;
 
-    private String autoAcceptCredential;
-
     private List<Map<String, String>> attributes;
+
+    private String autoAcceptCredential;
 }
