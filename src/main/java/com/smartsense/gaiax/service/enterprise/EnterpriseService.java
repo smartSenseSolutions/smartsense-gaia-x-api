@@ -79,8 +79,8 @@ public class EnterpriseService {
      * @param adminRepository                the admin repository
      * @param jwtUtil                        the jwt util
      * @param serviceOfferViewRepository     the service offer view repository
-     * @param serviceAccessLogRepository
-     * @param vereignClient
+     * @param serviceAccessLogRepository     the service access log repository
+     * @param vereignClient                  the vereign client
      */
     public EnterpriseService(EnterpriseRepository enterpriseRepository, EnterpriseCredentialRepository enterpriseCredentialRepository, S3Utils s3Utils, ServiceOfferRepository serviceOfferRepository, SignerClient signerClient, ObjectMapper objectMapper, AdminRepository adminRepository, JWTUtil jwtUtil, ServiceOfferViewRepository serviceOfferViewRepository, ServiceAccessLogRepository serviceAccessLogRepository, VereignClient vereignClient) {
         this.enterpriseRepository = enterpriseRepository;
@@ -96,6 +96,13 @@ public class EnterpriseService {
         this.vereignClient = vereignClient;
     }
 
+    /**
+     * Verify presentation login response.
+     *
+     * @param presentationId the presentation id
+     * @return the login response
+     * @throws JsonProcessingException the json processing exception
+     */
     public LoginResponse verifyPresentation(String presentationId) throws JsonProcessingException {
         ResponseEntity<VerifyPresentationResponse> responseEntity = vereignClient.verifyPresentation(presentationId);
         VerifyPresentationResponse body = responseEntity.getBody();
@@ -134,7 +141,6 @@ public class EnterpriseService {
      *
      * @param email    the email
      * @param password the password
-     * @param type     the type
      * @return the login response
      */
     public LoginResponse login(String email, String password) {
@@ -288,6 +294,8 @@ public class EnterpriseService {
     /**
      * Service offer list list.
      *
+     * @param enterpriseId the enterprise id
+     * @param query        the query
      * @return the list
      */
     public List<ServiceOfferView> allServiceOfferList(long enterpriseId, String query) {
@@ -323,9 +331,11 @@ public class EnterpriseService {
     /**
      * Service offer details map.
      *
-     * @param offerId the offer id
-     * @param vp      the vp
+     * @param enterpriseId   the enterprise id
+     * @param offerId        the offer id
+     * @param presentationId the presentation id
      * @return the map
+     * @throws JsonProcessingException the json processing exception
      */
     public ServiceOfferDetailsResponse serviceOfferDetails(long enterpriseId, long offerId, String presentationId) throws JsonProcessingException {
         ServiceOffer serviceOffer = serviceOfferRepository.findById(offerId).orElseThrow(EntityNotFoundException::new);
@@ -339,7 +349,7 @@ public class EnterpriseService {
             String legalName = presentation.getCredentialSubject().get("gx:legalName");
             LOGGER.debug("legalName form verification result -{}", legalName);
             Enterprise enterprise = enterpriseRepository.getByLegalName(legalName);
-            if (enterprise == null) {
+            if (enterprise == null || enterprise.getId() != enterpriseId) {
                 throw new BadDataException("legal name is not registered");
             }
             //save access log
@@ -376,6 +386,13 @@ public class EnterpriseService {
         return keys;
     }
 
+    /**
+     * Gets service offer details by id.
+     *
+     * @param enterpriseId the enterprise id
+     * @param id           the id
+     * @return the service offer details by id
+     */
     public ServiceOfferView getServiceOfferDetailsById(long enterpriseId, long id) {
         ServiceOfferView serviceOfferView = serviceOfferViewRepository.getByEnterpriseIdAndId(enterpriseId, id);
         Validate.isNull(serviceOfferView).launch(new BadDataException("invalid.service.offer.id"));
@@ -386,6 +403,13 @@ public class EnterpriseService {
         return serviceOfferView;
     }
 
+    /**
+     * Change status enterprise.
+     *
+     * @param enterpriseId the enterprise id
+     * @param status       the status
+     * @return the enterprise
+     */
     public Enterprise changeStatus(long enterpriseId, int status) {
         Enterprise enterprise = enterpriseRepository.findById(enterpriseId).orElseThrow(EntityNotFoundException::new);
         enterprise.setStatus(status);
