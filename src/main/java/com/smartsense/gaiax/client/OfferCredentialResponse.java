@@ -4,5 +4,18 @@
 
 package com.smartsense.gaiax.client;
 
-public class OfferCredentialRssponse {
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.util.Map;
+
+@Getter
+@Setter
+@Builder
+public class OfferCredentialResponse {
+
+    private Map<String, Object> data;
+
+    private String message;
 }

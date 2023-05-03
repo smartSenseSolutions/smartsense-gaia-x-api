@@ -113,3 +113,8 @@ CREATE TABLE public.service_access_log (
 	CONSTRAINT service_access_log_fk_1 FOREIGN KEY (consumer) REFERENCES public.enterprise(id),
 	CONSTRAINT service_access_log_fk_2 FOREIGN KEY (service_id) REFERENCES public.service_offer(id)
 );
+
+--changeset Nitin:8
+ALTER TABLE public.enterprise ADD connection_id varchar(255) NULL;
+ALTER TABLE public.enterprise DROP COLUMN "password";
+ALTER TABLE public.enterprise ADD offer_id varchar(255) NULL;

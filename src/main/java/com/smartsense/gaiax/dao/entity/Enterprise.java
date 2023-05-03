@@ -5,7 +5,6 @@
 package com.smartsense.gaiax.dao.entity;
 
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -28,9 +27,9 @@ public class Enterprise extends SuperEntity {
     @Column(nullable = false, unique = true)
     private String email;
 
-    @JsonIgnore
-    @Column(nullable = false)
-    private String password;
+    private String connectionId;
+
+    private String offerId;
 
     @Column(nullable = false, unique = true)
     private String legalName;

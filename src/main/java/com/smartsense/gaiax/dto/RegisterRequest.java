@@ -23,12 +23,12 @@ public class RegisterRequest {
     @Size(min = 3, max = 255)
     private String email;
 
-    @Size(min = 8, max = 16)
-    private String password;
-
-
     @Size(min = 3, max = 32)
     private String legalName;
+
+    @NotBlank
+    @Size(min = 3, max = 255)
+    private String connectionId;
 
     @Size(min = 3, max = 12)
     @Pattern(regexp = "^[A-Za-z0-9]+$")
