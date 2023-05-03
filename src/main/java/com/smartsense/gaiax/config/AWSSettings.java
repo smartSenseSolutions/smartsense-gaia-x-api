@@ -30,4 +30,6 @@ public class AWSSettings {
     private String serverIp;
 
     private String baseDomain;
+
+    private String bucketName;
 }

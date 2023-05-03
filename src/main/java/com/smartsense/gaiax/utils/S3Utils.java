@@ -11,7 +11,6 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.smartsense.gaiax.config.AWSSettings;
-import com.smartsense.gaiax.dto.StringPool;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -23,6 +22,8 @@ import java.util.Date;
 @Service
 public class S3Utils {
     private final AmazonS3 s3Client;
+
+    private final AWSSettings awsSettings;
 
     /**
      * Instantiates a new S 3 utils.
@@ -53,6 +54,7 @@ public class S3Utils {
                         //Do nothing
                     }
                 }).build();
+        this.awsSettings = awsSettings;
     }
 
 
@@ -63,7 +65,7 @@ public class S3Utils {
      * @param file       the file
      */
     public void uploadFile(String objectName, File file) {
-        s3Client.putObject(StringPool.S3_BUCKET_NAME, objectName, file);
+        s3Client.putObject(awsSettings.getBucketName(), objectName, file);
     }
 
     /**
@@ -77,7 +79,7 @@ public class S3Utils {
         long expTimeMillis = expiration.getTime();
         expTimeMillis += 10000; // 10 seconds
         expiration.setTime(expTimeMillis);
-        return s3Client.generatePresignedUrl(StringPool.S3_BUCKET_NAME, objectName, expiration).toString();
+        return s3Client.generatePresignedUrl(awsSettings.getBucketName(), objectName, expiration).toString();
     }
 
     /**
@@ -90,7 +92,7 @@ public class S3Utils {
     public File getObject(String key, String fileName) {
         File localFile = new File("/tmp/" + fileName);
         CommonUtils.deleteFile(localFile);
-        s3Client.getObject(new GetObjectRequest(StringPool.S3_BUCKET_NAME, key), localFile);
+        s3Client.getObject(new GetObjectRequest(awsSettings.getBucketName(), key), localFile);
         return localFile;
     }
 }

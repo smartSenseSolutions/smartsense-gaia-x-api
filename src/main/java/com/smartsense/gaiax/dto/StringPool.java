@@ -41,11 +41,7 @@ public interface StringPool {
      * The constant JOB_TYPE.
      */
     String JOB_TYPE = "JOB_TYPE";
-    /**
-     * The constant S3_BUCKET_NAME.
-     */
-    String S3_BUCKET_NAME = "smartsense-gaiax-mvp";
-
+ 
     /**
      * The constant ADMIN_ROLE.
      */
