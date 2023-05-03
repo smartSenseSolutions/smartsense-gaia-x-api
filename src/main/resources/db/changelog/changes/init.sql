@@ -119,5 +119,5 @@ ALTER TABLE public.enterprise ADD connection_id varchar(255) NULL;
 ALTER TABLE public.enterprise DROP COLUMN "password";
 ALTER TABLE public.enterprise ADD offer_id varchar(255) NULL;
 
---changeset Nitin:8
+--changeset Nitin:9
 ALTER TABLE public.enterprise_credential ADD offer_id varchar(255) NULL;

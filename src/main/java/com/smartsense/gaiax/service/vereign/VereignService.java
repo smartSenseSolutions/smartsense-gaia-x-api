@@ -104,7 +104,7 @@ public class VereignService {
                 .attributes(attributes)
                 .build();
         LOGGER.debug("Request for offer credentials {}", objectMapper.writeValueAsString(offerCredentialRequest));
-        ResponseEntity<OfferCredentialResponse> mapResponseEntity = vereignClient.offerCredential(offerCredentialRequest); //TODO do we need to save it?
+        ResponseEntity<OfferCredentialResponse> mapResponseEntity = vereignClient.offerCredential(offerCredentialRequest);
         String offerId = mapResponseEntity.getBody().getData().get("id").toString();
         LOGGER.debug("Offer created for enterprise -> {}, id ->{}", legalName, offerId);
         return offerId;
