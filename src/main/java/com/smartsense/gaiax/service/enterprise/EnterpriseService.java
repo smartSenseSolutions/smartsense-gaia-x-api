@@ -102,7 +102,7 @@ public class EnterpriseService {
         LOGGER.debug(" verifyPresentation response -> {}", objectMapper.writeValueAsString(body));
         PresentationData data = body.getData();
         String state = data.getState();
-        if (state.equalsIgnoreCase("done") && data.getPresentations().size() > 0) {
+        if (state.equalsIgnoreCase("done") && !data.getPresentations().isEmpty()) {
             Presentation presentation = data.getPresentations().get(0);
             String email = presentation.getCredentialSubject().get("email");
             LOGGER.debug("Email form verification result -{}", email);
@@ -334,7 +334,7 @@ public class EnterpriseService {
         LOGGER.debug(" verifyPresentation response while accessing service offer {} -> {}", offerId, objectMapper.writeValueAsString(body));
         PresentationData data = body.getData();
         String state = data.getState();
-        if (state.equalsIgnoreCase("done") && data.getPresentations().size() > 0) {
+        if (state.equalsIgnoreCase("done") && !data.getPresentations().isEmpty()) {
             Presentation presentation = data.getPresentations().get(0);
             String legalName = presentation.getCredentialSubject().get("gx:legalName");
             LOGGER.debug("legalName form verification result -{}", legalName);

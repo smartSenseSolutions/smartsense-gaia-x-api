@@ -36,7 +36,7 @@ This MVP covers below user case:
 
 ![Create service offer.png](doc%2FCreate%20service%20offer.png)
 
-## Service offer flow
+## Consume service flow
 
 ![Service offer flow.png](doc%2FService%20offer%20flow.png)
 
