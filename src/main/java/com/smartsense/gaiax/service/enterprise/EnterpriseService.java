@@ -313,12 +313,14 @@ public class EnterpriseService {
         ServiceOffer serviceOffer = serviceOfferRepository.findById(offerId).orElseThrow(EntityNotFoundException::new);
         //verify if VP is
         VerifyRequest verifyRequest = VerifyRequest.builder()
-                .policies(Set.of("checkSignature"))
+                .policies(Set.of("checkSignature", "gxCompliance"))
                 .credential(vp)
                 .build();
         ResponseEntity<Map<String, Object>> verify = signerClient.verify(verifyRequest);
         boolean valid = Boolean.parseBoolean(((Map<String, Object>) verify.getBody().get("data")).get("checkSignature").toString());
-        Validate.isFalse(valid).launch(new BadDataException("Can not verify VP"));
+        boolean gxComplianceValid = Boolean.parseBoolean(((Map<String, Object>) verify.getBody().get("data")).get("gxCompliance").toString());
+        Validate.isFalse(valid).launch(new BadDataException("Can not verify signature of VP"));
+        Validate.isFalse(gxComplianceValid).launch(new BadDataException("Can not verify signature of Gaia-X"));
 
         //save access log
         ServiceAccessLog serviceAccessLog = ServiceAccessLog.builder()
