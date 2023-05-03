@@ -11,8 +11,9 @@ This MVP covers below user case:
     5. Host public key, did.json, and participant files under the .well-known path
 2. Create service offering and create service offering credential and host offer file under the .well-known path
 3. List Catalogue
-4. Create a verifiable presentation of Gaia-X participant credentials
-5. validate VP and see masked(Secure) information bt verifying VP
+4. Store Credential in PCM
+5. Share credential from PCM
+6. Login with PCM
 
 ## Tools and Technologies
 
@@ -45,10 +46,11 @@ This MVP covers below user case:
 
 ## Known issue or improvement
 
-1. Authentication and Authorization flow can be improved
+1. Authentication and Authorization flow can be improved(using OpenID4VP/SOIPV2)
 2. Data exchange based on Gaia-x trust framework(Ocean protocol??)
 3. Unit Test
 4. K8S ingress and secret creation can be done using argoCD/argo workflow
+5. Storage of key and other files can be done in better and more secure way
 
 ## Run application
 
