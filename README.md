@@ -4,7 +4,7 @@ This is MVP to showcase the capability of smartSense in contact with the Gaia-X 
 This MVP covers below user case:
 
 1. On-boarding in Gaia-x
-    1. Create a sub-domain for enterprise
+    1. Create a sub-domain for enterprise
     2. Create SSL key-value pair for enterprise
     3. Create web did
     4. Create participant credentials and sign in using Gaia-x API
@@ -22,6 +22,9 @@ This MVP covers below user case:
 4. AWS Route53 SDK
 5. AWS S3 SDK
 6. [NodeJS for signer tool](https://github.com/smartSenseSolutions/smartsense-gaia-x-signer)
+7. [GXFS PCM](https://apps.apple.com/in/app/gxfs-pcm/id1662845551)
+8. [GXFS Connection manager](https://gitlab.com/gaia-x/data-infrastructure-federation-services/ocm/connection-manager)
+9. [GXFS proof manager](https://gitlab.com/gaia-x/data-infrastructure-federation-services/ocm/proof-manager/-/blob/main/swagger.json)
 
 ## Onboarding flow
 
