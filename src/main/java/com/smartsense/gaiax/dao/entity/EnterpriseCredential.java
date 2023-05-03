@@ -31,4 +31,6 @@ public class EnterpriseCredential extends SuperEntity {
 
     @Column(nullable = false)
     private String credentials;
+
+    private String offerId;
 }

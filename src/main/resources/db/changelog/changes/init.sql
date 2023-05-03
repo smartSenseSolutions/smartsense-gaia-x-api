@@ -118,3 +118,6 @@ CREATE TABLE public.service_access_log (
 ALTER TABLE public.enterprise ADD connection_id varchar(255) NULL;
 ALTER TABLE public.enterprise DROP COLUMN "password";
 ALTER TABLE public.enterprise ADD offer_id varchar(255) NULL;
+
+--changeset Nitin:8
+ALTER TABLE public.enterprise_credential ADD offer_id varchar(255) NULL;

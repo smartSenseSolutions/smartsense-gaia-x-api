@@ -16,6 +16,7 @@ import com.smartsense.gaiax.dto.RegistrationStatus;
 import com.smartsense.gaiax.dto.StringPool;
 import com.smartsense.gaiax.exception.BadDataException;
 import com.smartsense.gaiax.service.job.ScheduleService;
+import com.smartsense.gaiax.service.vereign.VereignService;
 import com.smartsense.gaiax.utils.CommonUtils;
 import com.smartsense.gaiax.utils.S3Utils;
 import org.apache.commons.io.FileUtils;
@@ -49,6 +50,8 @@ public class SignerService {
 
     private final EnterpriseCredentialRepository enterpriseCredentialRepository;
 
+    private final VereignService vereignService;
+
     /**
      * Instantiates a new Signer service.
      *
@@ -58,14 +61,16 @@ public class SignerService {
      * @param objectMapper                   the object mapper
      * @param scheduleService                the schedule service
      * @param enterpriseCredentialRepository the enterprise credential repository
+     * @param vereignService
      */
-    public SignerService(EnterpriseRepository enterpriseRepository, SignerClient signerClient, S3Utils s3Utils, ObjectMapper objectMapper, ScheduleService scheduleService, EnterpriseCredentialRepository enterpriseCredentialRepository) {
+    public SignerService(EnterpriseRepository enterpriseRepository, SignerClient signerClient, S3Utils s3Utils, ObjectMapper objectMapper, ScheduleService scheduleService, EnterpriseCredentialRepository enterpriseCredentialRepository, VereignService vereignService) {
         this.enterpriseRepository = enterpriseRepository;
         this.signerClient = signerClient;
         this.s3Utils = s3Utils;
         this.objectMapper = objectMapper;
         this.scheduleService = scheduleService;
         this.enterpriseCredentialRepository = enterpriseCredentialRepository;
+        this.vereignService = vereignService;
     }
 
     /**
@@ -95,20 +100,27 @@ public class SignerService {
             FileUtils.writeStringToFile(file, participantString, Charset.defaultCharset());
             s3Utils.uploadFile(enterpriseId + "/participant.json", file);
 
+            //offer legal person credential in PCM
+            String participantJsonLink = "https://" + enterprise.getSubDomainName() + "/.well-known/participant.json";
+            String offerId = vereignService.offerLegalPersonCredentials(enterprise.getConnectionId(), enterprise.getDid(), participantJsonLink, enterprise.getLegalName());
+
             EnterpriseCredential participant = enterpriseCredentialRepository.getByEnterpriseIdAndLabel(enterpriseId, "participant");
             if (participant == null) {
                 participant = EnterpriseCredential.builder()
                         .credentials(participantString)
                         .enterpriseId(enterpriseId)
                         .label("participant")
+                        .offerId(offerId)
                         .build();
             } else {
                 participant.setCredentials(participantString);
+                participant.setOfferId(offerId);
             }
-
 
             enterpriseCredentialRepository.save(participant);
             enterprise.setStatus(RegistrationStatus.PARTICIPANT_JSON_CREATED.getStatus());
+
+
             LOGGER.debug("participant json created for enterprise->{} , json ->{}", enterpriseId, participantString);
         } catch (Exception e) {
             LOGGER.error("Error while creating participant json for enterprise -{}", enterpriseId, e);

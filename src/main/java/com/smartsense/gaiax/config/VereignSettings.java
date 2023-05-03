@@ -16,4 +16,6 @@ import org.springframework.context.annotation.Configuration;
 public class VereignSettings {
 
     private String credentialDefinitionId;
+
+    private String participantCredentialDefinitionId;
 }
