@@ -16,6 +16,10 @@ import lombok.Setter;
 @Builder
 public class LoginResponse {
 
+    private int statusCode;
+
+    private String status;
+
     private String token;
 
     private SessionDTO session;

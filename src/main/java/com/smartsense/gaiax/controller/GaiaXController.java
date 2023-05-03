@@ -97,10 +97,27 @@ public class GaiaXController {
      * @throws SchedulerException the scheduler exception
      */
     @Tag(name = "Login")
-    @Operation(summary = "Login(type=1 for login as admin, type =2 for login as enterprise)")
+    @Operation(summary = "Login as Admin")
     @PostMapping(path = "login", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public CommonResponse<LoginResponse> login(@RequestBody @Valid LoginRequest registerRequest) {
-        return CommonResponse.of(enterpriseService.login(registerRequest.getEmail(), registerRequest.getPassword(), registerRequest.getType()));
+        return CommonResponse.of(enterpriseService.login(registerRequest.getEmail(), registerRequest.getPassword()));
+    }
+
+
+    /**
+     * Verify presentation common response.
+     *
+     * @param sessionDTO     the session dto
+     * @param presentationId the presentation id
+     * @return the common response
+     * @throws JsonProcessingException the json processing exception
+     */
+    @Tag(name = "Login")
+    @Operation(summary = "Verify membership VP")
+    @GetMapping(path = "verify/presentation", produces = MediaType.APPLICATION_JSON_VALUE)
+    public CommonResponse<LoginResponse> verifyPresentation(@Parameter(hidden = true) @RequestAttribute(value = StringPool.SESSION_DTO) SessionDTO sessionDTO, @RequestParam(name = "presentationId") String presentationId) throws JsonProcessingException {
+        validateAccess(Set.of(StringPool.ENTERPRISE_ROLE), sessionDTO.getRole());
+        return CommonResponse.of(enterpriseService.verifyPresentation(presentationId));
     }
 
     /**
@@ -124,7 +141,8 @@ public class GaiaXController {
      * @param registerRequest the register request
      * @param sessionDTO      the session dto
      * @return the enterprise
-     * @throws SchedulerException the scheduler exception
+     * @throws SchedulerException      the scheduler exception
+     * @throws JsonProcessingException the json processing exception
      */
     @Operation(summary = "Register enterprise in the system. This will save enterprise data in database and create job to create subdomain, role: admin")
     @PostMapping(path = "register", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -328,6 +346,7 @@ public class GaiaXController {
      * Create service offering common response.
      *
      * @param sessionDTO the session dto
+     * @param id         the id
      * @return the common response
      */
     @Tag(name = "Catalogue")
@@ -343,6 +362,7 @@ public class GaiaXController {
      * Gets all service offers.
      *
      * @param sessionDTO the session dto
+     * @param query      the query
      * @return the all service offers
      */
     @Tag(name = "Catalogue")

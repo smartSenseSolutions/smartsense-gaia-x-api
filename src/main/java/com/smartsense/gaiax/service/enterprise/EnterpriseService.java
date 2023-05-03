@@ -4,9 +4,9 @@
 
 package com.smartsense.gaiax.service.enterprise;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.smartsense.gaiax.client.CreateVCRequest;
-import com.smartsense.gaiax.client.SignerClient;
+import com.smartsense.gaiax.client.*;
 import com.smartsense.gaiax.dao.entity.*;
 import com.smartsense.gaiax.dao.repository.*;
 import com.smartsense.gaiax.dto.*;
@@ -65,6 +65,8 @@ public class EnterpriseService {
 
     private final ServiceAccessLogRepository serviceAccessLogRepository;
 
+    private final VereignClient vereignClient;
+
 
     /**
      * Instantiates a new Enterprise service.
@@ -79,8 +81,9 @@ public class EnterpriseService {
      * @param jwtUtil                        the jwt util
      * @param serviceOfferViewRepository     the service offer view repository
      * @param serviceAccessLogRepository
+     * @param vereignClient
      */
-    public EnterpriseService(EnterpriseRepository enterpriseRepository, EnterpriseCredentialRepository enterpriseCredentialRepository, S3Utils s3Utils, ServiceOfferRepository serviceOfferRepository, SignerClient signerClient, ObjectMapper objectMapper, AdminRepository adminRepository, JWTUtil jwtUtil, ServiceOfferViewRepository serviceOfferViewRepository, ServiceAccessLogRepository serviceAccessLogRepository) {
+    public EnterpriseService(EnterpriseRepository enterpriseRepository, EnterpriseCredentialRepository enterpriseCredentialRepository, S3Utils s3Utils, ServiceOfferRepository serviceOfferRepository, SignerClient signerClient, ObjectMapper objectMapper, AdminRepository adminRepository, JWTUtil jwtUtil, ServiceOfferViewRepository serviceOfferViewRepository, ServiceAccessLogRepository serviceAccessLogRepository, VereignClient vereignClient) {
         this.enterpriseRepository = enterpriseRepository;
         this.enterpriseCredentialRepository = enterpriseCredentialRepository;
         this.s3Utils = s3Utils;
@@ -91,6 +94,38 @@ public class EnterpriseService {
         this.jwtUtil = jwtUtil;
         this.serviceOfferViewRepository = serviceOfferViewRepository;
         this.serviceAccessLogRepository = serviceAccessLogRepository;
+        this.vereignClient = vereignClient;
+    }
+
+    public LoginResponse verifyPresentation(String presentationId) throws JsonProcessingException {
+        ResponseEntity<VerifyPresentationResponse> responseEntity = vereignClient.verifyPresentation(presentationId);
+        VerifyPresentationResponse body = responseEntity.getBody();
+        LOGGER.debug(" verifyPresentation response -> {}", objectMapper.writeValueAsString(body));
+        PresentationData data = body.getData();
+        String state = data.getState();
+        if (state.equalsIgnoreCase("done") && data.getPresentations().size() > 0) {
+            Presentation presentation = data.getPresentations().get(0);
+            String email = presentation.getCredentialSubject().get("email");
+            LOGGER.debug("Email form verification result -{}", email);
+            Enterprise enterprise = enterpriseRepository.getByEmail(email);
+            if (enterprise == null) {
+                throw new BadDataException("Email is not registered");
+            }
+            SessionDTO sessionDTO = SessionDTO.builder()
+                    .role(StringPool.ENTERPRISE_ROLE)
+                    .email(enterprise.getEmail())
+                    .enterpriseId(enterprise.getId())
+                    .build();
+            return LoginResponse.builder()
+                    .token("Bearer " + jwtUtil.generateToken(sessionDTO))
+                    .session(sessionDTO)
+                    .build();
+        } else {
+            return LoginResponse.builder()
+                    .statusCode(responseEntity.getStatusCode().value())
+                    .status(data.getState())
+                    .build();
+        }
     }
 
     /**
@@ -101,38 +136,20 @@ public class EnterpriseService {
      * @param type     the type
      * @return the login response
      */
-    public LoginResponse login(String email, String password, int type) {
-        if (type == 1) {
-            //login as admin
-            Admin admin = adminRepository.getByUserName(email);
-            Validate.isNull(admin).launch(new BadDataException(INVALID_USERNAME_OR_PASSWORD));
-            boolean valid = BCrypt.checkpw(password, admin.getPassword());
-            Validate.isFalse(valid).launch(new BadDataException(INVALID_USERNAME_OR_PASSWORD));
-            SessionDTO sessionDTO = SessionDTO.builder()
-                    .role(StringPool.ADMIN_ROLE)
-                    .email(admin.getUserName())
-                    .enterpriseId(-1)
-                    .build();
-            return LoginResponse.builder()
-                    .token("Bearer " + jwtUtil.generateToken(sessionDTO))
-                    .session(sessionDTO)
-                    .build();
-        } else {
-            //login aa enterprise
-            Enterprise enterprise = enterpriseRepository.getByEmail(email);
-            Validate.isNull(enterprise).launch(new BadDataException(INVALID_USERNAME_OR_PASSWORD));
-            boolean valid = true; //need to login with wallet
-            Validate.isFalse(valid).launch(new BadDataException(INVALID_USERNAME_OR_PASSWORD));
-            SessionDTO sessionDTO = SessionDTO.builder()
-                    .role(StringPool.ENTERPRISE_ROLE)
-                    .email(enterprise.getEmail())
-                    .enterpriseId(enterprise.getId())
-                    .build();
-            return LoginResponse.builder()
-                    .token("Bearer " + jwtUtil.generateToken(sessionDTO))
-                    .session(sessionDTO)
-                    .build();
-        }
+    public LoginResponse login(String email, String password) {
+        Admin admin = adminRepository.getByUserName(email);
+        Validate.isNull(admin).launch(new BadDataException(INVALID_USERNAME_OR_PASSWORD));
+        boolean valid = BCrypt.checkpw(password, admin.getPassword());
+        Validate.isFalse(valid).launch(new BadDataException(INVALID_USERNAME_OR_PASSWORD));
+        SessionDTO sessionDTO = SessionDTO.builder()
+                .role(StringPool.ADMIN_ROLE)
+                .email(admin.getUserName())
+                .enterpriseId(-1)
+                .build();
+        return LoginResponse.builder()
+                .token("Bearer " + jwtUtil.generateToken(sessionDTO))
+                .session(sessionDTO)
+                .build();
     }
 
     /**
