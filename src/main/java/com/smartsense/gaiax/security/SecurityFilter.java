@@ -58,6 +58,7 @@ public class SecurityFilter implements Filter {
         publicUrls.add("/favicon.ico");
         publicUrls.add("/swagger-resources/**");
         publicUrls.add("/v2/api-docs");
+        publicUrls.add("/verify/presentation");
         Collections.unmodifiableCollection(publicUrls);
     }
 
