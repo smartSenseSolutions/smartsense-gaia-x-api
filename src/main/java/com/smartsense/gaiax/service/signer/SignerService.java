@@ -101,8 +101,7 @@ public class SignerService {
             s3Utils.uploadFile(enterpriseId + "/participant.json", file);
 
             //offer legal person credential in PCM
-            String participantJsonLink = "https://" + enterprise.getSubDomainName() + "/.well-known/participant.json";
-            String offerId = vereignService.offerLegalPersonCredentials(enterprise.getConnectionId(), enterprise.getDid(), participantJsonLink, enterprise.getLegalName());
+            String offerId = vereignService.offerLegalPersonCredentials(enterprise.getConnectionId(), CommonUtils.getEnterpriseDid(enterprise.getSubDomainName()), CommonUtils.getParticipantJsonLink(enterprise.getSubDomainName()), enterprise.getLegalName());
 
             EnterpriseCredential participant = enterpriseCredentialRepository.getByEnterpriseIdAndLabel(enterpriseId, "participant");
             if (participant == null) {

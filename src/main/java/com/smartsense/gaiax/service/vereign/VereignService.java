@@ -72,7 +72,7 @@ public class VereignService {
         legalNameMap.put("value", legalName);
         attributes.add(legalNameMap);
 
-        return offerCredentials(connectionId, legalName, attributes);
+        return offerCredentials(connectionId, legalName, attributes, vereignSettings.getParticipantCredentialDefinitionId(), "gx:LegalParticipant issued on " + appName);
 
     }
 
@@ -92,14 +92,14 @@ public class VereignService {
         emailMap.put("value", registerRequest.getEmail());
         attributes.add(emailMap);
 
-        return offerCredentials(registerRequest.getConnectionId(), registerRequest.getLegalName(), attributes);
+        return offerCredentials(registerRequest.getConnectionId(), registerRequest.getLegalName(), attributes, vereignSettings.getCredentialDefinitionId(), "Login with " + appName);
     }
 
-    private String offerCredentials(String connectionId, String legalName, List<Map<String, String>> attributes) throws JsonProcessingException {
+    private String offerCredentials(String connectionId, String legalName, List<Map<String, String>> attributes, String definitionId, String comment) throws JsonProcessingException {
         OfferCredentialRequest offerCredentialRequest = OfferCredentialRequest.builder()
                 .connectionId(connectionId)
-                .credentialDefinitionId(vereignSettings.getCredentialDefinitionId())
-                .comment("Login with " + appName)
+                .credentialDefinitionId(definitionId)
+                .comment(comment)
                 .autoAcceptCredential("never") ////static for POC
                 .attributes(attributes)
                 .build();

@@ -14,6 +14,7 @@ import com.smartsense.gaiax.dao.repository.EnterpriseRepository;
 import com.smartsense.gaiax.dto.CreateVPRequest;
 import com.smartsense.gaiax.exception.BadDataException;
 import com.smartsense.gaiax.exception.EntityNotFoundException;
+import com.smartsense.gaiax.utils.CommonUtils;
 import com.smartsense.gaiax.utils.S3Utils;
 import com.smartsense.gaiax.utils.Validate;
 import org.json.JSONObject;
@@ -70,7 +71,7 @@ public class CredentialService {
         JSONObject verifiableCredential = new JSONObject(enterpriseCredential.getCredentials()).getJSONObject("selfDescriptionCredential").getJSONArray("verifiableCredential").getJSONObject(0);
 
         CreateVPRequest createVPRequest = CreateVPRequest.builder()
-                .holderDID("did:web:" + enterprise.getSubDomainName())
+                .holderDID(CommonUtils.getEnterpriseDid(enterprise.getSubDomainName()))
                 .privateKeyUrl(s3Utils.getPreSignedUrl(enterpriseId + "/pkcs8_" + enterprise.getSubDomainName() + ".key"))
                 .claims(List.of(verifiableCredential.toMap()))
                 .build();

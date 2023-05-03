@@ -37,6 +37,13 @@ public class CommonUtils {
                 }
             }
         }
+    }
 
+    public static String getEnterpriseDid(String subDomain) {
+        return "did:web:" + subDomain;
+    }
+
+    public static String getParticipantJsonLink(String subDomain) {
+        return "https://" + subDomain + "/.well-known/participant.json";
     }
 }

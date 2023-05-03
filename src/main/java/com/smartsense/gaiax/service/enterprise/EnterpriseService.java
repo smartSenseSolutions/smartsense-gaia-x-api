@@ -119,6 +119,8 @@ public class EnterpriseService {
             return LoginResponse.builder()
                     .token("Bearer " + jwtUtil.generateToken(sessionDTO))
                     .session(sessionDTO)
+                    .status(data.getState())
+                    .statusCode(responseEntity.getStatusCode().value())
                     .build();
         } else {
             return LoginResponse.builder()
@@ -162,9 +164,9 @@ public class EnterpriseService {
         //TODO more details to added
         Enterprise enterprise = enterpriseRepository.findById(id).orElseThrow(EntityNotFoundException::new);
         enterprise.setDidJson("https://" + enterprise.getSubDomainName() + "/.well-known/did.json");
-        enterprise.setParticipantJson("https://" + enterprise.getSubDomainName() + "/.well-known/participant.json");
+        enterprise.setParticipantJson(CommonUtils.getParticipantJsonLink(enterprise.getSubDomainName()));
         enterprise.setCertificateChain("https://" + enterprise.getSubDomainName() + "/.well-known/x509CertificateChain.pem");
-        enterprise.setDid("did:web:" + enterprise.getSubDomainName());
+        enterprise.setDid(CommonUtils.getEnterpriseDid(enterprise.getSubDomainName()));
         return enterprise;
     }
 
@@ -228,7 +230,7 @@ public class EnterpriseService {
             }
             //create VC for service offering
             String domain = enterprise.getSubDomainName();
-            String did = "did:web:" + enterprise.getSubDomainName();
+            String did = CommonUtils.getEnterpriseDid(enterprise.getSubDomainName());
             HashMap<String, String> data = new HashMap<>();
             data.put("name", name);
             data.put("fileName", file.getName());
