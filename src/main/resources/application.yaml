@@ -12,7 +12,7 @@ spring:
   main:
     allow-bean-definition-overriding: true
   application:
-    name: smartsense-gaia-x-api
+    name: ${APPLICATION_NAME}
   datasource:
     url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}?useSSL=${USE_SSL}
     username: ${DB_USER_NAME}
@@ -90,5 +90,8 @@ k8s:
   serviceName: ${K8S_SERVICE_NAME}
 signer:
   host: ${SIGNER_API_HOST}
+vereign:
+  host: ${VEREIGN_HOST:https://gaiax.vereign.com}
+  credentialDefinitionId: ${CREDENTIAL_DEFINITION_ID}
 jwt:
   tokenSigningKey: ${JWT_TOKEN_SIGNING_KEY}
