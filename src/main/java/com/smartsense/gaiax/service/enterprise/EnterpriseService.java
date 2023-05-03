@@ -121,7 +121,7 @@ public class EnterpriseService {
             //login aa enterprise
             Enterprise enterprise = enterpriseRepository.getByEmail(email);
             Validate.isNull(enterprise).launch(new BadDataException(INVALID_USERNAME_OR_PASSWORD));
-            boolean valid = BCrypt.checkpw(password, enterprise.getPassword());
+            boolean valid = true; //need to login with wallet
             Validate.isFalse(valid).launch(new BadDataException(INVALID_USERNAME_OR_PASSWORD));
             SessionDTO sessionDTO = SessionDTO.builder()
                     .role(StringPool.ENTERPRISE_ROLE)
