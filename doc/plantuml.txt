@@ -1,5 +1,10 @@
 @startuml
+User -> PCM: Scan QR code and create a connection
 User -> "API server": Onboarding request with needed fields
+"API server" -> "API server" : Save data in database
+"API server" -> "PCM" : Offer membership credentials in PCM
+"API server" -> "API server": Start background job for onboarding
+"User" <- "API server" : Return onboarding status
 "API server" -> "AWS route53": create Subdomain
 "API server" <-- "AWS route53": Subdomain created
 "API server" -> "let's encrypt": Create let's encrypt certificate for a subdomain
@@ -16,9 +21,9 @@ User -> "API server": Onboarding request with needed fields
 "Signer API"  <-- "Gaia-X API": Signed participant.json
 "API server" <-- "Signer API": participant.json
 "API server" -> "AWS S3": Upload partipant.json \n Host participant.json in .well-known path
+"API server" -> PCM: Offer legal person credentials in PCM
 User  <- "API server": Onboarding completed
 @enduml
-
 
 Create Service offer
 

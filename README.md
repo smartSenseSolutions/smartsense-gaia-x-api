@@ -39,13 +39,16 @@ This MVP covers below user case:
 
 ![Service offer flow.png](doc%2FService%20offer%20flow.png)
 
+## High level could deployment diagram
+
+![Gaia-x MVP.drawio.png](doc%2FGaia-x%20MVP.drawio.png)
+
 ## Known issue or improvement
 
 1. Authentication and Authorization flow can be improved
 2. Data exchange based on Gaia-x trust framework(Ocean protocol??)
 3. Unit Test
 4. K8S ingress and secret creation can be done using argoCD/argo workflow
-5. For login, we can use Openid4VP with the integration of keycloak
 
 ## Run application
 
