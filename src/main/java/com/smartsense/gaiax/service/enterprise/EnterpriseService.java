@@ -42,7 +42,7 @@ public class EnterpriseService {
     /**
      * The constant INVALID_USERNAME_OR_PASSWORD.
      */
-    public static final String INVALID_USERNAME_OR_PASSWORD = "invalid.username.or.password";
+    public static final String INVALID_USERNAME_OR_PASSWORD = "invalid.username.or.password";  //pragma: allowlist secret
 
     private final EnterpriseRepository enterpriseRepository;
 
@@ -184,6 +184,36 @@ public class EnterpriseService {
         return enterpriseRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
     }
 
+
+    /**
+     * Gets enterprise files.
+     *
+     * @param hostName the host name
+     * @param fileName the file name
+     * @return the enterprise files
+     * @throws IOException the io exception
+     */
+    public String getEnterpriseFiles(String hostName, String enterpriseName, String fileName) throws IOException {
+        File file = null;
+        try {
+            //Restrict key and csr file download
+            //TODO can be improved by storing private key in more secure place
+            if (fileName.endsWith("key") || fileName.endsWith("csr")) {
+                throw new EntityNotFoundException("Can find file -> " + fileName);
+            }
+            Enterprise enterprise = enterpriseRepository.getByLegalName(enterpriseName);
+            if (enterprise == null) {
+                throw new BadDataException("Can not find lefal name -> " + enterpriseName);
+            }
+
+            String fileKey = enterprise.getId() + "/" + fileName;
+            file = s3Utils.getObject(fileKey, fileName);
+            return FileUtils.readFileToString(file, Charset.defaultCharset());
+        } finally {
+            CommonUtils.deleteFile(file);
+        }
+    }
+
     /**
      * Gets enterprise files.
      *
@@ -242,7 +272,7 @@ public class EnterpriseService {
             data.put("description", request.getDescription());
             data.put("policyUrl", request.getPolicy());
             data.put("termsAndConditionsUrl", request.getTerms());
-            data.put("termsAndConditionsHash", "70c1d713215f95191a11d38fe2341faed27d19e083917bc8732ca4fea4976700");
+            data.put("termsAndConditionsHash", "70c1d713215f95191a11d38fe2341faed27d19e083917bc8732ca4fea4976700"); //pragma: allowlist secret
             data.put("requestType", request.getRequestType());
             data.put("accessType", request.getAccessType());
             data.put("formatType", request.getFormatType());
@@ -283,7 +313,7 @@ public class EnterpriseService {
                     .requestType(request.getRequestType())
                     .formatType(request.getFormatType())
                     .terms(request.getTerms())
-                    .termsHash("70c1d713215f95191a11d38fe2341faed27d19e083917bc8732ca4fea4976700") //TODO this is hard coded
+                    .termsHash("70c1d713215f95191a11d38fe2341faed27d19e083917bc8732ca4fea4976700") //pragma: allowlist secret
                     .build();
             return serviceOfferRepository.save(serviceOffer);
         } finally {

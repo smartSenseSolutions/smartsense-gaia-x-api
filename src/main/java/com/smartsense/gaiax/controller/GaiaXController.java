@@ -137,6 +137,13 @@ public class GaiaXController {
         return enterpriseService.getEnterpriseFiles(host, fileName);
     }
 
+    @Operation(summary = "Get files with enterprise name, this is public API")
+    @GetMapping(path = "{enterpriseName}/{fileName}")
+    @Tag(name = "Well-known")
+    public String getEnterpriseFiles(@PathVariable(name = "enterpriseName") String enterpriseName, @PathVariable(name = "fileName") String fileName, @RequestHeader(name = HttpHeaders.HOST) String host) throws IOException {
+        return enterpriseService.getEnterpriseFiles(host, enterpriseName, fileName);
+    }
+
     /**
      * Register business enterprise.
      *

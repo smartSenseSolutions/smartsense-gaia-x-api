@@ -18,4 +18,6 @@ import lombok.Setter;
 public class CreateDidRequest {
 
     private String domain;
+
+    private String tenant;
 }
