@@ -54,6 +54,8 @@ public class ServiceOffer extends SuperEntity {
 
     private String termsHash;
 
+    private String labelLevel;
+
     @JsonIgnore
     @Convert(converter = StringToMapConvertor.class)
     private Map<String, Object> meta;

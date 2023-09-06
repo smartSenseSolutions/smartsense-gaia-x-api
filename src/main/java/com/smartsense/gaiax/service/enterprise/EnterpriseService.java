@@ -325,7 +325,6 @@ public class EnterpriseService {
             data.put("requestType", request.getRequestType());
             data.put("accessType", request.getAccessType());
             data.put("formatType", request.getFormatType());
-            data.put("labelLevel", labelLevelUrl);
             CreateVCRequest createVCRequest = CreateVCRequest.builder()
                     .data(data)
                     .templateId("ServiceOffering")
@@ -359,6 +358,7 @@ public class EnterpriseService {
                     .policy(request.getPolicy())
                     .producedBy(did)
                     .subjectDid(did)
+                    .labelLevel(labelLevelId + ".json")
                     .accessType(request.getAccessType())
                     .requestType(request.getRequestType())
                     .formatType(request.getFormatType())
