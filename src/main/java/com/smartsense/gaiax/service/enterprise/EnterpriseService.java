@@ -299,7 +299,7 @@ public class EnterpriseService {
 
             Map<String, Object> labelLevelResponse = signerClient.labelLevel(labelLevelVCs).getBody();
 
-            String labelLevelVc = objectMapper.writeValueAsString(((Map<String, Object>) labelLevelResponse.get("data"));
+            String labelLevelVc = objectMapper.writeValueAsString(labelLevelResponse.get("data"));
 
             LOGGER.info("label level response  -> {}", labelLevelVc);
 
