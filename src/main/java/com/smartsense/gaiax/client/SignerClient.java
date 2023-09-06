@@ -58,4 +58,8 @@ public interface SignerClient {
     @PostMapping(path = "verify", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Map<String, Object>> verify(@RequestBody VerifyRequest request);
 
+
+    @PostMapping(path = "label-level", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<Map<String, Object>> labelLevel(@RequestBody Map<String, Object> request);
+
 }

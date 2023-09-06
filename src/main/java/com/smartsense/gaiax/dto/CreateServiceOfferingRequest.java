@@ -30,6 +30,7 @@ public class CreateServiceOfferingRequest {
 
     private String terms;
 
-
     private Map<String, Object> meta;
+
+    private Map<String, Object> labelLevel;
 }

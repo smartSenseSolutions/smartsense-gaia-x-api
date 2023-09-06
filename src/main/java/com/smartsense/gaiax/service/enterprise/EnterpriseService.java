@@ -28,9 +28,10 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 /**
  * The type Enterprise service.
@@ -263,6 +264,54 @@ public class EnterpriseService {
             if (serviceOffer != null) {
                 throw new BadDataException("Duplicate service offering");
             }
+
+            //TODO labelLevel
+            String labelLevelId = "labelLevel_" + UUID.randomUUID();
+            String labelLevelUrl = "https://" + enterprise.getSubDomainName() + "/.well-known/" + labelLevelId + ".json";
+            String serviceOfferUrl = "https://" + enterprise.getSubDomainName() + "/.well-known/" + request.getName() + ".json";
+
+            Map<String, Object> labelLevelVCs = new LinkedHashMap<>();
+            Map<String, Object> labelLevel = new LinkedHashMap<>();
+            labelLevel.put("@context", List.of("https://www.w3.org/2018/credentials/v1", "https://w3id.org/security/suites/jws-2020/v1", "https://registry.lab.gaia-x.eu/development/api/trusted-shape-registry/v1/shapes/jsonld/trustframework#"));
+            labelLevel.put("issuanceDate", LocalDateTime.now().atZone(ZoneOffset.UTC).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+            labelLevel.put("type", List.of("VerifiableCredential"));
+            labelLevel.put("issuer", enterprise.getDid());
+            labelLevel.put("id", labelLevelUrl);
+
+            Map<String, Object> labelLevelSubject = new LinkedHashMap<>();
+            labelLevelSubject.put("gx:criteria", request.getLabelLevel());
+            labelLevelSubject.put("gx:assignedTo", serviceOfferUrl);
+            labelLevelSubject.put("id", labelLevelUrl);
+            labelLevelSubject.put("type", "gx:ServiceOfferingLabel");
+            labelLevel.put("credentialSubject", labelLevelSubject);
+
+            labelLevelVCs.put("vcs", labelLevel);
+            labelLevelVCs.put("verificationMethod", enterprise.getDid());
+            labelLevelVCs.put("issuer", enterprise.getDid());
+
+            String fileKey = enterpriseId + "/pkcs8_" + enterprise.getSubDomainName() + ".key";
+
+            String fileName = UUID.randomUUID() + ".key";
+            File privateKeyFile = s3Utils.getObject(fileKey, fileName);
+            labelLevelVCs.put("privateKey", FileUtils.readFileToString(privateKeyFile, Charset.defaultCharset()));
+
+            LOGGER.info("label level request  -> {}", objectMapper.writeValueAsString(labelLevelVCs));
+
+            Map<String, Object> labelLevelResponse = signerClient.labelLevel(labelLevelVCs).getBody();
+
+            String labelLevelVc = objectMapper.writeValueAsString(labelLevelResponse);
+
+            LOGGER.info("label level response  -> {}", labelLevelVc);
+
+
+            LOGGER.info("uploading label level json file");
+            File labelLeveFile = new File("/tmp/" + labelLevelId + ".json");
+            FileUtils.writeStringToFile(file, labelLevelVc, Charset.defaultCharset());
+            s3Utils.uploadFile(enterpriseId + "/" + labelLevelId + ".json", labelLeveFile);
+            LOGGER.info("label level json file uploaded");
+
+            //-----------------
+
             //create VC for service offering
             String domain = enterprise.getSubDomainName();
             String did = CommonUtils.getEnterpriseDid(enterprise.getSubDomainName());
@@ -276,6 +325,7 @@ public class EnterpriseService {
             data.put("requestType", request.getRequestType());
             data.put("accessType", request.getAccessType());
             data.put("formatType", request.getFormatType());
+            data.put("labelLevel", labelLevelUrl);
             CreateVCRequest createVCRequest = CreateVCRequest.builder()
                     .data(data)
                     .templateId("ServiceOffering")
