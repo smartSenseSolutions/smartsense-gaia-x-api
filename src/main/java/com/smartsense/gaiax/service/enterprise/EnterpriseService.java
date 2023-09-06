@@ -292,9 +292,10 @@ public class EnterpriseService {
 
             String fileKey = enterpriseId + "/pkcs8_" + enterprise.getSubDomainName() + ".key";
 
-            String fileName = UUID.randomUUID() + ".key";
-            File privateKeyFile = s3Utils.getObject(fileKey, fileName);
-            labelLevelVCs.put("privateKey", encodeToBase64(FileUtils.readFileToString(privateKeyFile, Charset.defaultCharset())));
+
+            labelLevelVCs.put("privateKeyUrl", s3Utils.getPreSignedUrl(fileKey));
+            labelLevelVCs.put("verificationMethod", enterprise.getDid());
+            labelLevelSubject.put("issuer", enterprise.getDid());
 
             LOGGER.info("label level request  -> {}", objectMapper.writeValueAsString(labelLevelVCs));
 
