@@ -286,16 +286,16 @@ public class EnterpriseService {
             labelLevelSubject.put("type", "gx:ServiceOfferingLabel");
             labelLevel.put("credentialSubject", labelLevelSubject);
 
-            labelLevelVCs.put("vcs", labelLevel);
-            labelLevelVCs.put("verificationMethod", enterprise.getDid());
-            labelLevelVCs.put("issuer", enterprise.getDid());
+            labelLevelVCs.put("vcs", Map.of("labelLevel", labelLevel));
+            labelLevelVCs.put("verificationMethod", CommonUtils.getEnterpriseDid(enterprise.getSubDomainName()));
+            labelLevelVCs.put("issuer", CommonUtils.getEnterpriseDid(enterprise.getSubDomainName()));
 
             String fileKey = enterpriseId + "/pkcs8_" + enterprise.getSubDomainName() + ".key";
 
 
             labelLevelVCs.put("privateKeyUrl", s3Utils.getPreSignedUrl(fileKey));
             labelLevelVCs.put("verificationMethod", enterprise.getDid());
-            labelLevelSubject.put("issuer", enterprise.getDid());
+            labelLevelVCs.put("issuer", enterprise.getDid());
 
             LOGGER.info("label level request  -> {}", objectMapper.writeValueAsString(labelLevelVCs));
 
