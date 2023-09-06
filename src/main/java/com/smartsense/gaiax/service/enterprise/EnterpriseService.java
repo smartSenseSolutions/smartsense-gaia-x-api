@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -293,7 +294,7 @@ public class EnterpriseService {
 
             String fileName = UUID.randomUUID() + ".key";
             File privateKeyFile = s3Utils.getObject(fileKey, fileName);
-            labelLevelVCs.put("privateKey", FileUtils.readFileToString(privateKeyFile, Charset.defaultCharset()));
+            labelLevelVCs.put("privateKey", encodeToBase64(FileUtils.readFileToString(privateKeyFile, Charset.defaultCharset())));
 
             LOGGER.info("label level request  -> {}", objectMapper.writeValueAsString(labelLevelVCs));
 
@@ -495,5 +496,10 @@ public class EnterpriseService {
         enterprise.setStatus(status);
 
         return enterpriseRepository.save(enterprise);
+    }
+
+    public String encodeToBase64(String content) {
+        LOGGER.debug("HashingService(encodeToBase64) -> Encode the provided content.");
+        return Base64.getEncoder().encodeToString(content.getBytes(StandardCharsets.UTF_8));
     }
 }
