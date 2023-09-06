@@ -60,7 +60,6 @@ public class SecurityFilter implements Filter {
         publicUrls.add("/v2/api-docs");
         publicUrls.add("/verify/presentation");
         publicUrls.add("/tinyurl");
-        publicUrls.add("/{enterpriseName}/{fileName}");
         Collections.unmodifiableCollection(publicUrls);
     }
 
@@ -106,6 +105,7 @@ public class SecurityFilter implements Filter {
     public boolean isPublicPath(String requestURI) {
         for (String path : publicUrls) {
             if (antPathMatcher.match(path, requestURI)) {
+                LOGGER.debug("accessing public path - {}{", requestURI);
                 return true;
             }
         }
