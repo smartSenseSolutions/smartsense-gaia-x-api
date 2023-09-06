@@ -80,7 +80,7 @@ public class ServiceOfferView {
     }
 
     public String getLabelLevelUrl() {
-        return "https://" + this.subDomainName + "/.well-known/" + labelLevel + ".json";
+        return "https://" + this.subDomainName + "/.well-known/" + labelLevel;
     }
 
 }
