@@ -299,14 +299,14 @@ public class EnterpriseService {
 
             Map<String, Object> labelLevelResponse = signerClient.labelLevel(labelLevelVCs).getBody();
 
-            String labelLevelVc = objectMapper.writeValueAsString(labelLevelResponse);
+            String labelLevelVc = objectMapper.writeValueAsString(((Map<String, Object>) labelLevelResponse.get("data"));
 
             LOGGER.info("label level response  -> {}", labelLevelVc);
 
 
             LOGGER.info("uploading label level json file");
             File labelLeveFile = new File("/tmp/" + labelLevelId + ".json");
-            FileUtils.writeStringToFile(file, labelLevelVc, Charset.defaultCharset());
+            FileUtils.writeStringToFile(labelLeveFile, labelLevelVc, Charset.defaultCharset());
             s3Utils.uploadFile(enterpriseId + "/" + labelLevelId + ".json", labelLeveFile);
             LOGGER.info("label level json file uploaded");
 
