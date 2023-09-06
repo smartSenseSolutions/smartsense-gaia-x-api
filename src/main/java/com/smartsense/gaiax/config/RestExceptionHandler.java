@@ -117,7 +117,7 @@ public class RestExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler({HttpMessageNotReadableException.class, DuplicateEntityException.class, EntityCreationException.class, BadDataException.class, EntityModificationException.class, HttpRequestMethodNotSupportedException.class, MissingServletRequestParameterException.class})
     public ResponseEntity<CommonResponse<Map<String, Object>>> handleEntityException(Exception exception) {
-        log.error(HANDLE_ENTITY_EXCEPTION_ERROR, exception.getMessage());
+        log.error(HANDLE_ENTITY_EXCEPTION_ERROR, exception);
         String msg;
         try {
             msg = messageSource.getMessage(exception.getMessage(), null, LocaleContextHolder.getLocale());

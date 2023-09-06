@@ -79,7 +79,7 @@ public class RegistrationService {
         Validate.isTrue(enterpriseRepository.existsByEmail(registerRequest.getEmail())).launch("duplicate.email");
 
         //check registration number
-        Validate.isTrue(enterpriseRepository.existsByLegalRegistrationNumber(registerRequest.getLegalRegistrationNumber())).launch("duplicate.registration.number");
+//        Validate.isTrue(enterpriseRepository.existsByLegalRegistrationNumber(registerRequest.getLegalRegistrationNumber())).launch("duplicate.registration.number");
 
         String subdomain = (registerRequest.getSubDomainName().toLowerCase() + "." + awsSettings.getBaseDomain()).trim();
 

@@ -2,6 +2,7 @@ FROM openjdk:17-alpine
 LABEL org.opencontainers.image.authors="nitin.vavdiya@smartsensesolutions.com"
 LABEL version="1.0"
 LABEL description="Dokcer image for smartSense gaia-x MVP"
+RUN apk add openssl
 RUN mkdir /home/app
 RUN adduser -D smartsense && chown -R smartsense /home
 USER smartsense
