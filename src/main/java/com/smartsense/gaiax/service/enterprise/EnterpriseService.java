@@ -294,8 +294,6 @@ public class EnterpriseService {
 
 
             labelLevelVCs.put("privateKeyUrl", s3Utils.getPreSignedUrl(fileKey));
-            labelLevelVCs.put("verificationMethod", enterprise.getDid());
-            labelLevelVCs.put("issuer", enterprise.getDid());
 
             LOGGER.info("label level request  -> {}", objectMapper.writeValueAsString(labelLevelVCs));
 
