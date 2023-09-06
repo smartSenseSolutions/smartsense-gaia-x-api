@@ -10,6 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Transient;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.Immutable;
 import org.hibernate.annotations.Subselect;
 
@@ -80,7 +81,11 @@ public class ServiceOfferView {
     }
 
     public String getLabelLevelUrl() {
-        return "https://" + this.subDomainName + "/.well-known/" + labelLevel;
+        if (StringUtils.isNoneBlank(labelLevel)) {
+            return "https://" + this.subDomainName + "/.well-known/" + labelLevel;
+        } else {
+            return null;
+        }
     }
 
 }
