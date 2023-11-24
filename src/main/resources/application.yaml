@@ -91,7 +91,7 @@ k8s:
 signer:
   host: ${SIGNER_API_HOST}
 vereign:
-  host: ${VEREIGN_HOST:https://ssi-dev.vereign.com}
+  host: ${VEREIGN_HOST:https://ssi-dev.vereign.com/ocm-ui}
   credentialDefinitionId: ${CREDENTIAL_DEFINITION_ID}
   participantCredentialDefinitionId: ${PARTICIPANT_CREDENTIAL_DEFINITION_ID}
 tinyurl:

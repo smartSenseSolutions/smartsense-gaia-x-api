@@ -24,6 +24,6 @@ public class CreateVCRequest {
 
     private String privateKeyUrl;
 
-    private Map<String, String> data;
+    private Map<String, Object> data;
 
 }

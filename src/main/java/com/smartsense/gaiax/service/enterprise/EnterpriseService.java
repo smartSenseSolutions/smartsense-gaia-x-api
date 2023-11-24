@@ -315,7 +315,7 @@ public class EnterpriseService {
             //create VC for service offering
             String domain = enterprise.getSubDomainName();
             String did = CommonUtils.getEnterpriseDid(enterprise.getSubDomainName());
-            HashMap<String, String> data = new HashMap<>();
+            HashMap<String, Object> data = new HashMap<>();
             data.put("name", name);
             data.put("fileName", file.getName());
             data.put("description", request.getDescription());
@@ -325,6 +325,9 @@ public class EnterpriseService {
             data.put("requestType", request.getRequestType());
             data.put("accessType", request.getAccessType());
             data.put("formatType", request.getFormatType());
+            if (request.getResource() != null) {
+                data.put("resource", request.getResource());
+            }
             CreateVCRequest createVCRequest = CreateVCRequest.builder()
                     .data(data)
                     .templateId("ServiceOffering")

@@ -83,7 +83,7 @@ public class SignerService {
         Enterprise enterprise = enterpriseRepository.findById(enterpriseId).orElseThrow(BadDataException::new);
         try {
             String domain = enterprise.getSubDomainName();
-            Map<String, String> data = new HashMap<>();
+            Map<String, Object> data = new HashMap<>();
             data.put("legalName", enterprise.getLegalName());
             data.put("legalRegistrationType", enterprise.getLegalRegistrationType());
             data.put("legalRegistrationNumber", enterprise.getLegalRegistrationNumber());

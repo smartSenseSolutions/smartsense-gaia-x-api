@@ -14,9 +14,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @FeignClient(value = "Signerapi", url = "${vereign.host}")
 public interface VereignClient {
-    @PostMapping(path = "ocm-ui/attestation/v1/create-offer-credential", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = "attestation/v1/create-offer-credential", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<OfferCredentialResponse> offerCredential(@RequestBody OfferCredentialRequest offerCredentialRequest);
 
-    @GetMapping(path = "ocm-ui/proof/v1/find-by-presentation-id", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "proof/v1/find-by-presentation-id", produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<VerifyPresentationResponse> verifyPresentation(@RequestParam(name = "proofRecordId") String presentationId);
 }
