@@ -32,6 +32,10 @@ This MVP covers below user case:
 
 ![onboarding.png](doc%2Fonboarding.png)
 
+## Login with PCM
+
+![Login with PCM.png](doc%2FLogin%20with%20PCM.png)
+
 ## Create service offer flow
 
 ![Create service offer.png](doc%2FCreate%20service%20offer.png)
