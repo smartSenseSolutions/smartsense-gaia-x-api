@@ -121,3 +121,6 @@ ALTER TABLE public.enterprise ADD offer_id varchar(255) NULL;
 
 --changeset Nitin:9
 ALTER TABLE public.enterprise_credential ADD offer_id varchar(255) NULL;
+
+--changeset Neha:10
+ALTER TABLE public.service_offer ADD label_level varchar(255) NULL;
