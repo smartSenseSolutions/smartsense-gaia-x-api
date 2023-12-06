@@ -124,3 +124,6 @@ ALTER TABLE public.enterprise_credential ADD offer_id varchar(255) NULL;
 
 --changeset Neha:10
 ALTER TABLE public.service_offer ADD label_level varchar(255) NULL;
+
+--changeset Neha:11
+ALTER TABLE public.enterprise DROP CONSTRAINT IF EXISTS uk_4jka3x297mdgt6qcelb88flxb;
