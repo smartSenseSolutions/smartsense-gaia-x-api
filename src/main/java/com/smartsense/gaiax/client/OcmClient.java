@@ -12,8 +12,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
-@FeignClient(value = "Signerapi", url = "${vereign.host}")
-public interface VereignClient {
+@FeignClient(value = "Signerapi", url = "${ocm-server.host}")
+public interface OcmClient {
     @PostMapping(path = "attestation/v1/create-offer-credential", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<OfferCredentialResponse> offerCredential(@RequestBody OfferCredentialRequest offerCredentialRequest);
 

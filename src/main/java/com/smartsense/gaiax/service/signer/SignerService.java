@@ -16,7 +16,7 @@ import com.smartsense.gaiax.dto.RegistrationStatus;
 import com.smartsense.gaiax.dto.StringPool;
 import com.smartsense.gaiax.exception.BadDataException;
 import com.smartsense.gaiax.service.job.ScheduleService;
-import com.smartsense.gaiax.service.vereign.VereignService;
+import com.smartsense.gaiax.service.ocm.OcmService;
 import com.smartsense.gaiax.utils.CommonUtils;
 import com.smartsense.gaiax.utils.S3Utils;
 import org.apache.commons.io.FileUtils;
@@ -50,7 +50,7 @@ public class SignerService {
 
     private final EnterpriseCredentialRepository enterpriseCredentialRepository;
 
-    private final VereignService vereignService;
+    private final OcmService ocmService;
 
     /**
      * Instantiates a new Signer service.
@@ -61,16 +61,16 @@ public class SignerService {
      * @param objectMapper                   the object mapper
      * @param scheduleService                the schedule service
      * @param enterpriseCredentialRepository the enterprise credential repository
-     * @param vereignService
+     * @param ocmService
      */
-    public SignerService(EnterpriseRepository enterpriseRepository, SignerClient signerClient, S3Utils s3Utils, ObjectMapper objectMapper, ScheduleService scheduleService, EnterpriseCredentialRepository enterpriseCredentialRepository, VereignService vereignService) {
+    public SignerService(EnterpriseRepository enterpriseRepository, SignerClient signerClient, S3Utils s3Utils, ObjectMapper objectMapper, ScheduleService scheduleService, EnterpriseCredentialRepository enterpriseCredentialRepository, OcmService ocmService) {
         this.enterpriseRepository = enterpriseRepository;
         this.signerClient = signerClient;
         this.s3Utils = s3Utils;
         this.objectMapper = objectMapper;
         this.scheduleService = scheduleService;
         this.enterpriseCredentialRepository = enterpriseCredentialRepository;
-        this.vereignService = vereignService;
+        this.ocmService = ocmService;
     }
 
     /**
@@ -101,7 +101,7 @@ public class SignerService {
             s3Utils.uploadFile(enterpriseId + "/participant.json", file);
 
             //offer legal person credential in PCM
-            String offerId = vereignService.offerLegalPersonCredentials(enterprise.getConnectionId(), CommonUtils.getEnterpriseDid(enterprise.getSubDomainName()), CommonUtils.getParticipantJsonLink(enterprise.getSubDomainName()), enterprise.getLegalName());
+            String offerId = ocmService.offerLegalPersonCredentials(enterprise.getConnectionId(), CommonUtils.getEnterpriseDid(enterprise.getSubDomainName()), CommonUtils.getParticipantJsonLink(enterprise.getSubDomainName()), enterprise.getLegalName());
 
             EnterpriseCredential participant = enterpriseCredentialRepository.getByEnterpriseIdAndLabel(enterpriseId, "participant");
             if (participant == null) {

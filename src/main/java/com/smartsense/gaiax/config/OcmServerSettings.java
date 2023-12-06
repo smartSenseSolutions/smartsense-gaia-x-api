@@ -9,11 +9,11 @@ import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
-@ConfigurationProperties(prefix = "vereign")
+@ConfigurationProperties(prefix = "ocm-server")
 @Configuration
 @Getter
 @Setter
-public class VereignSettings {
+public class OcmServerSettings {
 
     private String credentialDefinitionId;
 

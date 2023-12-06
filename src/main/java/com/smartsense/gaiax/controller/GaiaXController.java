@@ -409,7 +409,7 @@ public class GaiaXController {
      * @throws JsonProcessingException the json processing exception
      */
     @Tag(name = "Catalogue")
-    @Operation(summary = "Get Service offer details. This API will consume credential presentation id of PCM and check with vereign API if credentials is shared , role = enterprise")
+    @Operation(summary = "Get Service offer details. This API will consume credential presentation id of PCM and check with OCM API if credentials is shared , role = enterprise")
     @GetMapping(path = "enterprises/service-offers/{offerId}/details", produces = MediaType.APPLICATION_JSON_VALUE)
     public CommonResponse<ServiceOfferDetailsResponse> serviceOfferDetails(@Parameter(hidden = true) @RequestAttribute(value = StringPool.SESSION_DTO) SessionDTO sessionDTO,
                                                                            @PathVariable(name = "offerId") long offerId,

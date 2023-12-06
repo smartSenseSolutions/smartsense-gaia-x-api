@@ -12,7 +12,7 @@ import com.smartsense.gaiax.dto.RegisterRequest;
 import com.smartsense.gaiax.dto.RegistrationStatus;
 import com.smartsense.gaiax.dto.StringPool;
 import com.smartsense.gaiax.service.job.ScheduleService;
-import com.smartsense.gaiax.service.vereign.VereignService;
+import com.smartsense.gaiax.service.ocm.OcmService;
 import com.smartsense.gaiax.utils.Validate;
 import org.quartz.SchedulerException;
 import org.springframework.stereotype.Service;
@@ -36,7 +36,7 @@ public class RegistrationService {
 
     private final ScheduleService scheduleService;
 
-    private final VereignService vereignService;
+    private final OcmService ocmService;
 
 
     /**
@@ -45,13 +45,13 @@ public class RegistrationService {
      * @param enterpriseRepository the enterprise repository
      * @param awsSettings          the aws settings
      * @param scheduleService
-     * @param vereignService
+     * @param ocmService
      */
-    public RegistrationService(EnterpriseRepository enterpriseRepository, AWSSettings awsSettings, ScheduleService scheduleService, VereignService vereignService) {
+    public RegistrationService(EnterpriseRepository enterpriseRepository, AWSSettings awsSettings, ScheduleService scheduleService, OcmService ocmService) {
         this.enterpriseRepository = enterpriseRepository;
         this.awsSettings = awsSettings;
         this.scheduleService = scheduleService;
-        this.vereignService = vereignService;
+        this.ocmService = ocmService;
     }
 
     /**
@@ -86,7 +86,7 @@ public class RegistrationService {
         //check sub domain
         Validate.isTrue(enterpriseRepository.existsBySubDomainName(subdomain)).launch("duplicate.sub.domain");
 
-        String offerId = vereignService.offerMembershipCredentials(registerRequest);
+        String offerId = ocmService.offerMembershipCredentials(registerRequest);
 
         //save enterprise details
         Enterprise enterprise = enterpriseRepository.save(Enterprise.builder()

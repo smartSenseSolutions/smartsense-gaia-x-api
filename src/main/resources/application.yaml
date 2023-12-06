@@ -90,8 +90,8 @@ k8s:
   serviceName: ${K8S_SERVICE_NAME}
 signer:
   host: ${SIGNER_API_HOST}
-vereign:
-  host: ${VEREIGN_HOST:https://ssi-dev.vereign.com/ocm-ui}
+ocm-server:
+  host: ${OCM_SERVER_HOST:https://gaiax-ocm-engine.proofsense.in}
   credentialDefinitionId: ${CREDENTIAL_DEFINITION_ID}
   participantCredentialDefinitionId: ${PARTICIPANT_CREDENTIAL_DEFINITION_ID}
 tinyurl:

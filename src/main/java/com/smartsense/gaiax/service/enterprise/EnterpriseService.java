@@ -66,7 +66,7 @@ public class EnterpriseService {
 
     private final ServiceAccessLogRepository serviceAccessLogRepository;
 
-    private final VereignClient vereignClient;
+    private final OcmClient ocmClient;
 
 
     /**
@@ -82,9 +82,9 @@ public class EnterpriseService {
      * @param jwtUtil                        the jwt util
      * @param serviceOfferViewRepository     the service offer view repository
      * @param serviceAccessLogRepository     the service access log repository
-     * @param vereignClient                  the vereign client
+     * @param ocmClient                  the vereign client
      */
-    public EnterpriseService(EnterpriseRepository enterpriseRepository, EnterpriseCredentialRepository enterpriseCredentialRepository, S3Utils s3Utils, ServiceOfferRepository serviceOfferRepository, SignerClient signerClient, ObjectMapper objectMapper, AdminRepository adminRepository, JWTUtil jwtUtil, ServiceOfferViewRepository serviceOfferViewRepository, ServiceAccessLogRepository serviceAccessLogRepository, VereignClient vereignClient) {
+    public EnterpriseService(EnterpriseRepository enterpriseRepository, EnterpriseCredentialRepository enterpriseCredentialRepository, S3Utils s3Utils, ServiceOfferRepository serviceOfferRepository, SignerClient signerClient, ObjectMapper objectMapper, AdminRepository adminRepository, JWTUtil jwtUtil, ServiceOfferViewRepository serviceOfferViewRepository, ServiceAccessLogRepository serviceAccessLogRepository, OcmClient ocmClient) {
         this.enterpriseRepository = enterpriseRepository;
         this.enterpriseCredentialRepository = enterpriseCredentialRepository;
         this.s3Utils = s3Utils;
@@ -95,7 +95,7 @@ public class EnterpriseService {
         this.jwtUtil = jwtUtil;
         this.serviceOfferViewRepository = serviceOfferViewRepository;
         this.serviceAccessLogRepository = serviceAccessLogRepository;
-        this.vereignClient = vereignClient;
+        this.ocmClient = ocmClient;
     }
 
     /**
@@ -106,7 +106,7 @@ public class EnterpriseService {
      * @throws JsonProcessingException the json processing exception
      */
     public LoginResponse verifyPresentation(String presentationId) throws JsonProcessingException {
-        ResponseEntity<VerifyPresentationResponse> responseEntity = vereignClient.verifyPresentation(presentationId);
+        ResponseEntity<VerifyPresentationResponse> responseEntity = ocmClient.verifyPresentation(presentationId);
         VerifyPresentationResponse body = responseEntity.getBody();
         LOGGER.debug(" verifyPresentation response -> {}", objectMapper.writeValueAsString(body));
         PresentationData data = body.getData();
@@ -422,7 +422,7 @@ public class EnterpriseService {
      */
     public ServiceOfferDetailsResponse serviceOfferDetails(long enterpriseId, long offerId, String presentationId) throws JsonProcessingException {
         ServiceOffer serviceOffer = serviceOfferRepository.findById(offerId).orElseThrow(EntityNotFoundException::new);
-        ResponseEntity<VerifyPresentationResponse> responseEntity = vereignClient.verifyPresentation(presentationId);
+        ResponseEntity<VerifyPresentationResponse> responseEntity = ocmClient.verifyPresentation(presentationId);
         VerifyPresentationResponse body = responseEntity.getBody();
         LOGGER.debug(" verifyPresentation response while accessing service offer {} -> {}", offerId, objectMapper.writeValueAsString(body));
         PresentationData data = body.getData();
