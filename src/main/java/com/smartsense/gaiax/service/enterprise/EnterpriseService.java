@@ -316,7 +316,7 @@ public class EnterpriseService {
             String domain = enterprise.getSubDomainName();
             String did = CommonUtils.getEnterpriseDid(enterprise.getSubDomainName());
             HashMap<String, Object> data = new HashMap<>();
-            data.put("name", name);
+            data.put("name", request.getName());
             data.put("fileName", file.getName());
             data.put("description", request.getDescription());
             data.put("policyUrl", request.getPolicy());
