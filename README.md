@@ -3,7 +3,7 @@
 This is MVP to showcase the capability of smartSense in contact with the Gaia-X economy.
 This MVP covers below user case:
 
-1. On-boarding in Gaia-x
+1. Create Gaia-x compliment credentials(Participant json)
     1. Create a sub-domain for enterprise
     2. Create SSL key-value pair for enterprise
     3. Create web did
@@ -13,7 +13,7 @@ This MVP covers below user case:
 3. List Catalogue
 4. Store Credential in PCM
 5. Share credential from PCM
-6. Login with PCM
+6. Access your wallet by sharing the credential using PCM(ie. Login with PCM)
 
 ## Tools and Technologies
 
@@ -51,10 +51,9 @@ This MVP covers below user case:
 ## Known issue or improvement
 
 1. Authentication and Authorization flow can be improved(using OpenID4VP/SOIPV2)
-2. Data exchange based on Gaia-x trust framework(Ocean protocol??)
-3. Unit Test
-4. K8S ingress and secret creation can be done using argoCD/argo workflow
-5. Storage of key and other files can be done in better and more secure way
+2. Unit Test
+3. K8S ingress and secret creation can be done using argoCD/argo workflow
+4. Storage of key and other files can be done in better and more secure way
 
 ## Run application
 
